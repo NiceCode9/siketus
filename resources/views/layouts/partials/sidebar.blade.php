@@ -27,6 +27,22 @@
                 </p>
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('kegiatan-keagamaan.index') }}" class="nav-link">
+                <i class="nav-icon fas fa-home"></i>
+                <p>
+                    Kegiatan Keagamaan
+                </p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('kedisiplinan.index') }}" class="nav-link">
+                <i class="nav-icon fas fa-home"></i>
+                <p>
+                    Kedisiplinan
+                </p>
+            </a>
+        </li>
 
     </ul>
 </nav>

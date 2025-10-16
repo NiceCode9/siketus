@@ -19,6 +19,8 @@ Route::middleware('auth')->group(function () {
     Route::resources([
         'tahun-akademik' => \App\Http\Controllers\TahunAkademikController::class,
         'jurusan' => \App\Http\Controllers\JurusanController::class,
+        'kegiatan-keagamaan' => \App\Http\Controllers\KegiatanKeagamaanController::class,
+        'kedisiplinan' => \App\Http\Controllers\KedisiplinanController::class,
     ]);
 });
 

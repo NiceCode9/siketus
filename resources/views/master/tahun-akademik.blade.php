@@ -168,9 +168,13 @@
                 $('.invalid-feedback').text('');
                 $('#saveBtn').prop('disabled', true).find('.spinner-border').removeClass('d-none');
 
+                if (tahunAkademikId) {
+                    formData.append('_method', 'PUT');
+                }
+
                 $.ajax({
                     url: url,
-                    method: method,
+                    method: 'post',
                     data: formData,
                     processData: false,
                     contentType: false,

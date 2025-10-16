@@ -121,9 +121,13 @@
                 const url = id ? `/jurusan/${id}` : '/jurusan';
                 const method = id ? 'PUT' : 'POST';
 
+                if (id) {
+                    formData.append('_method', 'PUT');
+                }
+
                 $.ajax({
                     url: url,
-                    method: method,
+                    method: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
