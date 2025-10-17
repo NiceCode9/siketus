@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GuruKelasController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +34,18 @@ Route::middleware('auth')->group(function () {
         Route::get('guru-mapel/{id}/edit', 'edit')->name('guru-mapel.edit');
         Route::put('guru-mapel/{id}', 'update')->name('guru-mapel.update');
         Route::delete('guru-mapel/{id}', 'destroy')->name('guru-mapel.destroy');
+    });
+
+    // Tambahkan routes berikut ke file routes/web.php
+
+    Route::prefix('guru-kelas')->name('guru-kelas.')->group(function () {
+        Route::get('/', [GuruKelasController::class, 'index'])->name('index');
+        Route::get('/data', [GuruKelasController::class, 'getData'])->name('getData');
+        Route::post('/', [GuruKelasController::class, 'store'])->name('store');
+        Route::get('/{id}', [GuruKelasController::class, 'show'])->name('show');
+        Route::put('/{id}', [GuruKelasController::class, 'update'])->name('update');
+        Route::delete('/{id}', [GuruKelasController::class, 'destroy'])->name('destroy');
+        Route::get('/get-guru-mapel', [GuruKelasController::class, 'getGuruMapel'])->name('getGuruMapel');
     });
 });
 

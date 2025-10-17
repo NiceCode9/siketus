@@ -17,11 +17,20 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'username' => 'testuser',
-            'email' => 'test@example.com',
-            'password' => bcrypt('password'),
+        $this->call([
+            RoleSeeder::class,
+            JurusanSeeder::class,
+            KelasSeeder::class,
+            TahunAkademikSeeder::class,
+            MapelSeeder::class,
+            GuruSeeder::class,
+            SiswaSeeder::class,
+            UserSeeder::class,
+            GuruMapelSeeder::class,
+            GuruKelasSeeder::class,
+            RiwayatKelasSeeder::class,
+            KedisiplinanSeeder::class,
+            KegiatanKeagamaanSeeder::class,
         ]);
     }
 }
