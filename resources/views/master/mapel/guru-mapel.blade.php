@@ -97,7 +97,7 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: '{{ route('guru-mapel.index') }}',
+                    url: '{{ route('admin.guru-mapel.index') }}',
                     type: 'GET'
                 },
                 columns: [{
@@ -133,7 +133,7 @@
                 var id = $(this).data('id');
 
                 $.ajax({
-                    url: "{{ route('guru-mapel.edit', ':id') }}".replace(':id', id),
+                    url: "{{ route('admin.guru-mapel.edit', ':id') }}".replace(':id', id),
                     type: "GET",
                     success: function(response) {
                         $('#id').val(response.id);
@@ -161,8 +161,8 @@
 
                 var formData = $(this).serialize();
                 var id = $('#id').val();
-                var url = id ? '{{ route('guru-mapel.update', ':id') }}'.replace(':id', id) :
-                    '{{ route('guru-mapel.store') }}';
+                var url = id ? '{{ route('admin.guru-mapel.update', ':id') }}'.replace(':id', id) :
+                    '{{ route('admin.guru-mapel.store') }}';
 
                 if (id) {
                     // Edit Mode
@@ -222,7 +222,8 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: "{{ route('guru-mapel.destroy', ':id') }}".replace(':id',
+                            url: "{{ route('admin.guru-mapel.destroy', ':id') }}".replace(
+                                ':id',
                                 id),
                             type: "DELETE",
                             success: function(response) {

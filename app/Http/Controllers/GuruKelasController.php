@@ -239,4 +239,13 @@ class GuruKelasController extends Controller
             'data' => $guruMapels
         ]);
     }
+
+    public function getMapel(Request $request)
+    {
+        $mapels = GuruMapel::with('mapel')->where('guru_id', $request->guru_id)->get();
+        return response()->json([
+            'success' => true,
+            'data' => $mapels
+        ]);
+    }
 }

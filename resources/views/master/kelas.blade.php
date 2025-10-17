@@ -183,7 +183,7 @@
             var table = $('#kelas-table').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ route('kelas.index') }}",
+                ajax: "{{ route('admin.kelas.index') }}",
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',
@@ -253,7 +253,7 @@
                 var id = $(this).data('id');
 
                 $.ajax({
-                    url: "{{ url('kelas') }}/" + id,
+                    url: "{{ url('admin/kelas') }}/" + id,
                     type: "GET",
                     success: function(response) {
                         $('#view-nama-lengkap').text(response.kelas.tingkat + ' - ' + response
@@ -280,7 +280,7 @@
                 var id = $(this).data('id');
 
                 $.ajax({
-                    url: "{{ url('kelas') }}/" + id + "/edit",
+                    url: "{{ url('admin/kelas') }}/" + id + "/edit",
                     type: "GET",
                     success: function(response) {
                         $('#kelas_id').val(response.id);
@@ -310,7 +310,7 @@
 
                 var formData = $(this).serialize();
                 var id = $('#kelas_id').val();
-                var url = id ? "{{ url('kelas') }}/" + id : "{{ route('kelas.store') }}";
+                var url = id ? "{{ url('admin/kelas') }}/" + id : "{{ route('admin.kelas.store') }}";
                 var method = id ? 'PUT' : 'POST';
 
                 $.ajax({
@@ -364,7 +364,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: "{{ url('kelas') }}/" + id,
+                            url: "{{ url('admin/kelas') }}/" + id,
                             type: "DELETE",
                             success: function(response) {
                                 if (response.status) {

@@ -19,7 +19,7 @@
                         <div class="col-md-2">
                             <div class="form-group">
                                 <label>Guru</label>
-                                <select class="form-control" id="filter_guru_id" name="guru_id">
+                                <select class="form-control" id="filter" name="guru_id">
                                     <option value="">Semua Guru</option>
                                     @foreach ($gurus as $guru)
                                         <option value="{{ $guru->id }}">{{ $guru->nama_guru }}</option>
@@ -130,7 +130,7 @@
                             <select class="form-control" id="form_guru_id" name="guru_id" required>
                                 <option value="">Pilih Guru</option>
                                 @foreach ($gurus as $guru)
-                                    <option value="{{ $guru->id }}">{{ $guru->nama_guru }}</option>
+                                    <option value="{{ $guru->id }}">{{ $guru->nama }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -205,7 +205,7 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: "{{ route('guru-kelas.getData') }}",
+                    url: "{{ route('admin.guru-kelas.getData') }}",
                     data: function(d) {
                         d.guru_id = $('#filter_guru_id').val();
                         d.mapel_id = $('#filter_mapel_id').val();
@@ -264,6 +264,38 @@
                 table.ajax.reload();
             });
 
+
+            // Load Mapel base on Guru selection
+            function loadMapel() {
+                let guruId = $('#form_guru_id').val();
+
+                if (guruId) {
+                    $.ajax({
+                        url: "{{ route('admin.getMapel') }}",
+                        type: 'GET',
+                        data: {
+                            guru_id: guruId
+                        },
+                        success: function(response) {
+                            let options = '<option value="">Pilih Mata Pelajaran</option>';
+
+                            if (response.data.length > 0) {
+                                response.data.forEach(function(item) {
+                                    options +=
+                                        `<option value="${item.mapel.id}">${item.mapel.nama_mapel}</option>`;
+                                });
+                            } else {
+                                options = '<option value="">Tidak ada data Mata Pelajaran</option>';
+                            }
+
+                            $('#form_mapel_id').html(options);
+                        }
+                    });
+                } else {
+                    $('#form_mapel_id').html('<option value="">Pilih Guru terlebih dahulu</option>');
+                }
+            }
+
             // Load Guru Mapel based on Guru and Mapel selection
             function loadGuruMapel() {
                 let guruId = $('#form_guru_id').val();
@@ -271,7 +303,7 @@
 
                 if (guruId && mapelId) {
                     $.ajax({
-                        url: "{{ route('guru-kelas.getGuruMapel') }}",
+                        url: "{{ route('admin.getGuruMapel') }}",
                         type: 'GET',
                         data: {
                             guru_id: guruId,
@@ -283,7 +315,7 @@
                             if (response.data.length > 0) {
                                 response.data.forEach(function(item) {
                                     options +=
-                                        `<option value="${item.id}">${item.guru.nama_guru} - ${item.mapel.nama_mapel}</option>`;
+                                        `<option value="${item.id}">${item.guru.nama} - ${item.mapel.nama_mapel}</option>`;
                                 });
                             } else {
                                 options = '<option value="">Tidak ada data Guru Mapel</option>';
@@ -296,6 +328,10 @@
                     $('#guru_mapel_id').html('<option value="">Pilih Guru dan Mapel terlebih dahulu</option>');
                 }
             }
+
+            $('#form_guru_id').on('change', function() {
+                loadMapel();
+            });
 
             $('#form_guru_id, #form_mapel_id').on('change', function() {
                 loadGuruMapel();
@@ -315,7 +351,7 @@
                 let id = $(this).data('id');
 
                 $.ajax({
-                    url: `/guru-kelas/${id}`,
+                    url: `{{ route('admin.guru-kelas.show', ':id') }}`.replace(':id', id),
                     type: 'GET',
                     success: function(response) {
                         let data = response.data;
@@ -326,7 +362,7 @@
 
                         // Load guru mapel first, then set the value
                         $.ajax({
-                            url: "{{ route('guru-kelas.getGuruMapel') }}",
+                            url: "{{ route('admin.getGuruMapel') }}",
                             type: 'GET',
                             data: {
                                 guru_id: data.guru_mapel.guru_id,
@@ -339,7 +375,7 @@
                                     let selected = item.id == data
                                         .guru_mapel_id ? 'selected' : '';
                                     options +=
-                                        `<option value="${item.id}" ${selected}>${item.guru.nama_guru} - ${item.mapel.nama_mapel}</option>`;
+                                        `<option value="${item.id}" ${selected}>${item.guru.nama} - ${item.mapel.nama_mapel}</option>`;
                                 });
                                 $('#guru_mapel_id').html(options);
                             }
@@ -361,7 +397,8 @@
                 e.preventDefault();
 
                 let id = $('#guru_kelas_id').val();
-                let url = id ? `/guru-kelas/${id}` : "{{ route('guru-kelas.store') }}";
+                let url = id ? `{{ route('admin.guru-kelas.update', ':id') }}`.replace(':id', id) :
+                    "{{ route('admin.guru-kelas.store') }}";
                 let method = id ? 'PUT' : 'POST';
 
                 let formData = {
@@ -373,9 +410,13 @@
                     _token: "{{ csrf_token() }}"
                 };
 
+                if (id) {
+                    formData._method = 'PUT';
+                }
+
                 $.ajax({
                     url: url,
-                    type: method,
+                    type: 'POST',
                     data: formData,
                     success: function(response) {
                         $('#formModal').modal('hide');
@@ -421,7 +462,8 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: `/guru-kelas/${id}`,
+                            url: `{{ route('admin.guru-kelas.destroy', ':id') }}`.replace(
+                                ':id', id),
                             type: 'DELETE',
                             data: {
                                 _token: "{{ csrf_token() }}"

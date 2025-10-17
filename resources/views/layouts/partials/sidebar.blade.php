@@ -12,7 +12,7 @@
         <li class="nav-header">DATAMASTER</li>
 
         <li class="nav-item">
-            <a href="{{ route('tahun-akademik.index') }}" class="nav-link">
+            <a href="{{ route('admin.tahun-akademik.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-calendar-alt"></i>
                 <p>
                     Tahun Akademik
@@ -20,7 +20,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('jurusan.index') }}" class="nav-link">
+            <a href="{{ route('admin.jurusan.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-graduation-cap"></i>
                 <p>
                     Jurusan
@@ -28,7 +28,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('kegiatan-keagamaan.index') }}" class="nav-link">
+            <a href="{{ route('admin.kegiatan-keagamaan.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-pray"></i>
                 <p>
                     Kegiatan Keagamaan
@@ -36,7 +36,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('kedisiplinan.index') }}" class="nav-link">
+            <a href="{{ route('admin.kedisiplinan.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-user-check"></i>
                 <p>
                     Kedisiplinan
@@ -44,7 +44,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('guru.index') }}" class="nav-link">
+            <a href="{{ route('admin.guru.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-chalkboard-teacher"></i>
                 <p>
                     Guru
@@ -52,7 +52,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('kelas.index') }}" class="nav-link">
+            <a href="{{ route('admin.kelas.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-graduation-cap"></i>
                 <p>
                     Kelas
@@ -60,7 +60,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('siswa.index') }}" class="nav-link">
+            <a href="{{ route('admin.siswa.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-user-graduate"></i>
                 <p>
                     Siswa
@@ -68,7 +68,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('mapel.index') }}" class="nav-link">
+            <a href="{{ route('admin.mapel.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-book"></i>
                 <p>
                     Mapel
@@ -76,7 +76,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('guru-mapel.index') }}" class="nav-link">
+            <a href="{{ route('admin.guru-mapel.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-chalkboard-teacher"></i>
                 <p>
                     Guru Mapel
@@ -84,7 +84,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('guru-kelas.index') }}" class="nav-link">
+            <a href="{{ route('admin.guru-kelas.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-chalkboard-teacher"></i>
                 <p>
                     Guru Kelas

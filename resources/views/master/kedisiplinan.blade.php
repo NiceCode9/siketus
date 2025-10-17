@@ -92,7 +92,8 @@
 
                 const formData = new FormData(this);
                 const id = $('#id').val();
-                const url = id ? `/kedisiplinan/${id}` : '/kedisiplinan';
+                const url = id ? `{{ route('admin.kedisiplinan.update', ':id') }}`.replace(':id', id) :
+                    '{{ route('admin.kedisiplinan.store') }}';
                 const method = id ? 'PUT' : 'POST';
 
                 if (id) {
@@ -137,7 +138,8 @@
             $(document).on('click', '.btn-edit', function() {
                 const id = $(this).data('id');
 
-                $.get(`/kedisiplinan/${id}/edit`, function(response) {
+                $.get(`{{ route('admin.kedisiplinan.edit', ':id') }}`.replace(':id', id), function(
+                    response) {
                     if (response.success) {
                         $('#modal-title').text('Edit Data Kedisiplinan');
                         $('#id').val(response.data.id);
@@ -166,7 +168,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: `/kedisiplinan/${id}`,
+                            url: `/admin/kedisiplinan/${id}`,
                             method: 'DELETE',
                             success: function(response) {
                                 if (response.success) {
@@ -194,7 +196,7 @@
 
             // Fungsi untuk memuat data
             function loadData() {
-                $.get('/kedisiplinan', function(data) {
+                $.get('/admin/kedisiplinan', function(data) {
                     const tbody = $('#table-kedisiplinan tbody');
                     tbody.empty();
 

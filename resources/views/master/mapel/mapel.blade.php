@@ -158,7 +158,7 @@
             var table = $('#mapel-table').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ route('mapel.index') }}",
+                ajax: "{{ route('admin.mapel.index') }}",
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',
@@ -197,9 +197,6 @@
                         width: '15%'
                     }
                 ],
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Indonesian.json'
-                },
                 order: [
                     [1, 'asc']
                 ] // Order by kode_pelajaran by default
@@ -219,7 +216,7 @@
                 var id = $(this).data('id');
 
                 $.ajax({
-                    url: "{{ url('mapel') }}/" + id,
+                    url: "{{ route('admin.mapel.show', ':id') }}".replace(':id', id),
                     type: "GET",
                     success: function(response) {
                         $('#view-kode-pelajaran').text(response.mapel.kode_pelajaran);
@@ -244,7 +241,7 @@
                 var id = $(this).data('id');
 
                 $.ajax({
-                    url: "{{ url('mapel') }}/" + id + "/edit",
+                    url: "{{ route('admin.mapel.edit', ':id') }}".replace(':id', id),
                     type: "GET",
                     success: function(response) {
                         $('#mapel_id').val(response.id);
@@ -272,7 +269,8 @@
 
                 var formData = $(this).serialize();
                 var id = $('#mapel_id').val();
-                var url = id ? "{{ url('mapel') }}/" + id : "{{ route('mapel.store') }}";
+                var url = id ? "{{ route('admin.mapel.update', ':id') }}".replace(':id', id) :
+                    "{{ route('admin.mapel.store') }}";
                 var method = id ? 'PUT' : 'POST';
 
                 $.ajax({
@@ -326,7 +324,8 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: "{{ url('mapel') }}/" + id,
+                            url: "{{ route('admin.mapel.destroy', ':id') }}".replace(':id',
+                                id),
                             type: "DELETE",
                             success: function(response) {
                                 if (response.status) {

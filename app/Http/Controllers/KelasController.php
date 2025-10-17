@@ -46,7 +46,9 @@ class KelasController extends Controller
         }
 
         $jurusan = Jurusan::all();
-        $tingkat = ['X', 'XI', 'XII'];
+        // $tingkat = ['X', 'XI', 'XII'];
+        $tingkat = ['10', '11', '12'];
+
         return view('master.kelas', compact('jurusan', 'tingkat'));
     }
 
@@ -65,7 +67,8 @@ class KelasController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'jurusan_id' => 'required|exists:jurusan,id',
-            'tingkat' => 'required|in:X,XI,XII',
+            // 'tingkat' => 'required|in:X,XI,XII',
+            'tingkat' => 'required|in:10,11,12',
             'nama_kelas' => 'required',
         ]);
 
@@ -132,7 +135,8 @@ class KelasController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'jurusan_id' => 'required|exists:jurusan,id',
-            'tingkat' => 'required|in:X,XI,XII',
+            // 'tingkat' => 'required|in:X,XI,XII',
+            'tingkat' => 'required|in:10,11,12',
             'nama_kelas' => 'required',
         ]);
 

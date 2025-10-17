@@ -160,7 +160,8 @@
 
                 const formData = new FormData(this);
                 const tahunAkademikId = $('#tahun_akademik_id').val();
-                const url = tahunAkademikId ? `/tahun-akademik/${tahunAkademikId}` : '/tahun-akademik';
+                const url = tahunAkademikId ? `/admin/tahun-akademik/${tahunAkademikId}` :
+                    '/admin/tahun-akademik';
                 const method = tahunAkademikId ? 'PUT' : 'POST';
 
                 // Reset validasi
@@ -224,7 +225,7 @@
             $(document).on('click', '.edit-btn', function() {
                 const id = $(this).data('id');
 
-                $.get(`/tahun-akademik/${id}`, function(data) {
+                $.get(`/admin/tahun-akademik/${id}`, function(data) {
                     $('#tahun_akademik_id').val(data.id);
                     $('#nama_tahun_akademik').val(data.nama_tahun_akademik);
                     $('#tanggal_mulai').val(data.tanggal_mulai);
@@ -258,7 +259,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: `/tahun-akademik/${id}`,
+                            url: `/admin/tahun-akademik/${id}`,
                             method: 'DELETE',
                             beforeSend: function() {
                                 // Tampilkan loading

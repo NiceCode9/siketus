@@ -12,7 +12,7 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -45,8 +45,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}', [GuruKelasController::class, 'show'])->name('show');
         Route::put('/{id}', [GuruKelasController::class, 'update'])->name('update');
         Route::delete('/{id}', [GuruKelasController::class, 'destroy'])->name('destroy');
-        Route::get('/get-guru-mapel', [GuruKelasController::class, 'getGuruMapel'])->name('getGuruMapel');
     });
+
+
+
+    Route::get('/get-guru-mapel', [GuruKelasController::class, 'getGuruMapel'])->name('getGuruMapel');
+    Route::get('/get-mapel', [GuruKelasController::class, 'getMapel'])->name('getMapel');
 });
 
 require __DIR__ . '/auth.php';

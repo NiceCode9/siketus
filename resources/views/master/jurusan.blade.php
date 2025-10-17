@@ -118,7 +118,8 @@
 
                 const formData = new FormData(this);
                 const id = $('#id').val();
-                const url = id ? `/jurusan/${id}` : '/jurusan';
+                const url = id ? `{{ route('admin.jurusan.update', ':id') }}`.replace(':id', id) :
+                    '{{ route('admin.jurusan.store') }}';
                 const method = id ? 'PUT' : 'POST';
 
                 if (id) {
@@ -159,7 +160,7 @@
             $(document).on('click', '.btn-edit', function() {
                 const id = $(this).data('id');
 
-                $.get(`/jurusan/${id}/edit`, function(response) {
+                $.get(`{{ route('admin.jurusan.edit', ':id') }}`.replace(':id', id), function(response) {
                     if (response.success) {
                         $('#id').val(response.data.id);
                         $('#nama_jurusan').val(response.data.nama_jurusan);
@@ -184,7 +185,7 @@
                 const id = $('#delete-id').val();
 
                 $.ajax({
-                    url: `/jurusan/${id}`,
+                    url: `{{ route('admin.jurusan.destroy', ':id') }}`.replace(':id', id),
                     method: 'DELETE',
                     success: function(response) {
                         if (response.success) {
@@ -201,7 +202,7 @@
 
             // Fungsi Load Data
             function loadData() {
-                $.get('/jurusan', function(response) {
+                $.get('{{ route('admin.jurusan.index') }}', function(response) {
                     if (response.success) {
                         let html = '';
                         if (response.data.length > 0) {

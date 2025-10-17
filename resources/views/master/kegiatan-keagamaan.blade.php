@@ -89,7 +89,7 @@
 
                 const formData = new FormData(this);
                 const id = $('#id').val();
-                const url = id ? `/kegiatan-keagamaan/${id}` : '/kegiatan-keagamaan';
+                const url = id ? `/admin/kegiatan-keagamaan/${id}` : '/admin/kegiatan-keagamaan';
                 const method = id ? 'PUT' : 'POST';
 
                 if (id) {
@@ -141,7 +141,7 @@
                 const id = $(this).data('id');
 
                 $.ajax({
-                    url: `/kegiatan-keagamaan/${id}/edit`,
+                    url: `/admin/kegiatan-keagamaan/${id}/edit`,
                     method: 'GET',
                     success: function(response) {
                         if (response.success) {
@@ -180,7 +180,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: `/kegiatan-keagamaan/${id}`,
+                            url: `/admin/kegiatan-keagamaan/${id}`,
                             method: 'DELETE',
                             success: function(response) {
                                 if (response.success) {
@@ -209,7 +209,7 @@
             // Fungsi untuk memuat data
             function loadData() {
                 $.ajax({
-                    url: '/kegiatan-keagamaan',
+                    url: '/admin/kegiatan-keagamaan',
                     method: 'GET',
                     success: function(response) {
                         const tbody = $('#table-kegiatan tbody');

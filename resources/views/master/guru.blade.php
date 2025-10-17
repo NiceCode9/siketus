@@ -116,7 +116,7 @@
             var table = $('#guru-table').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ route('guru.index') }}",
+                ajax: "{{ route('admin.guru.index') }}",
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',
@@ -162,7 +162,7 @@
                 var id = $(this).data('id');
 
                 $.ajax({
-                    url: "{{ url('guru') }}/" + id + "/edit",
+                    url: "{{ route('admin.guru.edit', ':id') }}".replace(':id', id),
                     type: "GET",
                     success: function(response) {
                         $('#guru_id').val(response.id);
@@ -191,12 +191,17 @@
 
                 var formData = new FormData(this);
                 var id = $('#guru_id').val();
-                var url = id ? "{{ url('guru') }}/" + id : "{{ route('guru.store') }}";
+                var url = id ? "{{ route('admin.guru.edit', ':id') }}".replace(':id', id) :
+                    "{{ route('admin.guru.store') }}";
                 var method = id ? 'PUT' : 'POST';
+
+                if (id) {
+                    formData.append('_method', 'PUT');
+                }
 
                 $.ajax({
                     url: url,
-                    type: method,
+                    type: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
@@ -247,7 +252,8 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: "{{ url('guru') }}/" + id,
+                            url: "{{ route('admin.guru.destroy', ':id') }}".replace(':id',
+                                id),
                             type: "DELETE",
                             success: function(response) {
                                 if (response.status) {
