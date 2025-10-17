@@ -16,8 +16,9 @@ class KedisiplinanController extends Controller
         if ($request->ajax()) {
             $kedisiplinan = Kedisiplinan::all();
             return response()->json($kedisiplinan);
+        } else {
+            return view('master.kedisiplinan');
         }
-        return view('master.kedisiplinan');
     }
 
     /**

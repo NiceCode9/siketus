@@ -98,7 +98,7 @@
 
                 $.ajax({
                     url: url,
-                    method: 'post',
+                    type: 'post',
                     data: formData,
                     processData: false,
                     contentType: false,

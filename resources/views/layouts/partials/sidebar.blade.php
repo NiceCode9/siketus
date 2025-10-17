@@ -13,7 +13,7 @@
 
         <li class="nav-item">
             <a href="{{ route('tahun-akademik.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-home"></i>
+                <i class="nav-icon fas fa-calendar-alt"></i>
                 <p>
                     Tahun Akademik
                 </p>
@@ -21,7 +21,7 @@
         </li>
         <li class="nav-item">
             <a href="{{ route('jurusan.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-home"></i>
+                <i class="nav-icon fas fa-graduation-cap"></i>
                 <p>
                     Jurusan
                 </p>
@@ -29,7 +29,7 @@
         </li>
         <li class="nav-item">
             <a href="{{ route('kegiatan-keagamaan.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-home"></i>
+                <i class="nav-icon fas fa-pray"></i>
                 <p>
                     Kegiatan Keagamaan
                 </p>
@@ -37,9 +37,49 @@
         </li>
         <li class="nav-item">
             <a href="{{ route('kedisiplinan.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-home"></i>
+                <i class="nav-icon fas fa-user-check"></i>
                 <p>
                     Kedisiplinan
+                </p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('guru.index') }}" class="nav-link">
+                <i class="nav-icon fas fa-chalkboard-teacher"></i>
+                <p>
+                    Guru
+                </p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('kelas.index') }}" class="nav-link">
+                <i class="nav-icon fas fa-graduation-cap"></i>
+                <p>
+                    Kelas
+                </p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('siswa.index') }}" class="nav-link">
+                <i class="nav-icon fas fa-user-graduate"></i>
+                <p>
+                    Siswa
+                </p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('mapel.index') }}" class="nav-link">
+                <i class="nav-icon fas fa-book"></i>
+                <p>
+                    Mapel
+                </p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('guru-mapel.index') }}" class="nav-link">
+                <i class="nav-icon fas fa-chalkboard-teacher"></i>
+                <p>
+                    Guru Mapel
                 </p>
             </a>
         </li>

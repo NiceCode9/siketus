@@ -21,7 +21,19 @@ Route::middleware('auth')->group(function () {
         'jurusan' => \App\Http\Controllers\JurusanController::class,
         'kegiatan-keagamaan' => \App\Http\Controllers\KegiatanKeagamaanController::class,
         'kedisiplinan' => \App\Http\Controllers\KedisiplinanController::class,
+        'guru' => \App\Http\Controllers\GuruController::class,
+        'kelas' => \App\Http\Controllers\KelasController::class,
+        'siswa' => \App\Http\Controllers\SiswaController::class,
+        'mapel' => \App\Http\Controllers\MapelController::class,
     ]);
+
+    Route::controller(\App\Http\Controllers\GuruMapelController::class)->group(function () {
+        Route::get('guru-mapel', 'index')->name('guru-mapel.index');
+        Route::post('guru-mapel', 'store')->name('guru-mapel.store');
+        Route::get('guru-mapel/{id}/edit', 'edit')->name('guru-mapel.edit');
+        Route::put('guru-mapel/{id}', 'update')->name('guru-mapel.update');
+        Route::delete('guru-mapel/{id}', 'destroy')->name('guru-mapel.destroy');
+    });
 });
 
 require __DIR__ . '/auth.php';

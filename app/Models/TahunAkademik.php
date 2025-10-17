@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class TahunAkademik extends Model
@@ -19,8 +21,8 @@ class TahunAkademik extends Model
         'status_aktif' => 'boolean',
     ];
 
-    public function scopedAktif()
+    public function scopeAktif(Builder $query): void
     {
-        return $this->where('status_aktif', true);
+        $query->where('status_aktif', true);
     }
 }

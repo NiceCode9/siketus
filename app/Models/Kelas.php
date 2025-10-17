@@ -24,8 +24,8 @@ class Kelas extends Model
         return $this->hasMany(Siswa::class, 'current_class_id');
     }
 
-    public function getNamaKelasAttribute()
+    public function getNamaLengkapAttribute()
     {
-        return $this->tingkat . '-' . $this->jurusan->nama_jurusan . '-' .  $this->nama_kelas;
+        return $this->tingkat . '-' . $this->jurusan->kode_jurusan . '-' .  $this->nama_kelas;
     }
 }

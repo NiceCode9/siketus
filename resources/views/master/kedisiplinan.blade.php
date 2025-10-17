@@ -64,7 +64,7 @@
     </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
     <script>
         $(document).ready(function() {
             // CSRF Token untuk AJAX
@@ -94,7 +94,6 @@
                 const id = $('#id').val();
                 const url = id ? `/kedisiplinan/${id}` : '/kedisiplinan';
                 const method = id ? 'PUT' : 'POST';
-                console.log(url, method);
 
                 if (id) {
                     formData.append('_method', 'PUT');
@@ -102,7 +101,7 @@
 
                 $.ajax({
                     url: url,
-                    method: method,
+                    type: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
@@ -228,4 +227,4 @@
             }
         });
     </script>
-@endsection
+@endpush
