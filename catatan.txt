@@ -1,0 +1,2 @@
+# konsep penilaian di akun guru
+    - Guru akan memilih jenis penilaiannya (keagmaan, kedisiplinan, atau mapel), semester, kelas, kemudian akan muncul daftar nama siswa dan tinggal klik tombol nilai untuk mulai penilaian

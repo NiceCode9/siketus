@@ -14,11 +14,36 @@ class KegiatanKeagamaanSeeder extends Seeder
     public function run(): void
     {
         $kegiatan = [
-            ['nama_kegiatan' => 'Sholat Dzuhur Berjamaah'],
-            ['nama_kegiatan' => 'Tadarus Al-Quran'],
-            ['nama_kegiatan' => 'Kajian Keislaman'],
-            ['nama_kegiatan' => 'Peringatan Hari Besar Islam'],
-            ['nama_kegiatan' => 'Pesantren Kilat'],
+            [
+                'nama_kegiatan' => 'Sholat Dzuhur Berjamaah',
+                'tahun_akademik_id' => 2,
+                'tingkat_kelas' => '10',
+                'semester' => 'Ganjil',
+            ],
+            [
+                'nama_kegiatan' => 'Tadarus Al-Quran',
+                'tahun_akademik_id' => 2,
+                'tingkat_kelas' => '10',
+                'semester' => 'Ganjil',
+            ],
+            [
+                'nama_kegiatan' => 'Kajian Keislaman',
+                'tahun_akademik_id' => 2,
+                'tingkat_kelas' => '10',
+                'semester' => 'Ganjil',
+            ],
+            [
+                'nama_kegiatan' => 'Peringatan Hari Besar Islam',
+                'tahun_akademik_id' => 2,
+                'tingkat_kelas' => '10',
+                'semester' => 'Ganjil',
+            ],
+            [
+                'nama_kegiatan' => 'Pesantren Kilat',
+                'tahun_akademik_id' => 2,
+                'tingkat_kelas' => '10',
+                'semester' => 'Ganjil',
+            ],
         ];
 
         foreach ($kegiatan as $data) {

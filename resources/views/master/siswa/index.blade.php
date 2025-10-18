@@ -222,7 +222,7 @@
             var table = $('#siswa-table').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ route('siswa.index') }}",
+                ajax: "{{ route('admin.siswa.index') }}",
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',
@@ -269,7 +269,7 @@
                 var id = $(this).data('id');
 
                 $.ajax({
-                    url: "{{ url('siswa') }}/" + id,
+                    url: "{{ url('admin/siswa') }}/" + id,
                     type: "GET",
                     success: function(response) {
                         let namaKelas = response.siswa.current_class ? response.siswa
@@ -305,7 +305,7 @@
                 var id = $(this).data('id');
 
                 $.ajax({
-                    url: "{{ url('siswa') }}/" + id + "/edit",
+                    url: "{{ url('admin/siswa') }}/" + id + "/edit",
                     type: "GET",
                     success: function(response) {
                         $('#siswa_id').val(response.siswa.id);
@@ -340,7 +340,7 @@
 
                 var formData = new FormData(this);
                 var id = $('#siswa_id').val();
-                var url = id ? "{{ url('siswa') }}/" + id : "{{ route('siswa.store') }}";
+                var url = id ? "{{ url('admin/siswa') }}/" + id : "{{ route('admin.siswa.store') }}";
                 var method = id ? 'PUT' : 'POST';
 
                 // Remove password confirmation from form data
@@ -399,7 +399,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: "{{ url('siswa') }}/" + id,
+                            url: "{{ url('admin/siswa') }}/" + id,
                             type: "DELETE",
                             success: function(response) {
                                 if (response.status) {

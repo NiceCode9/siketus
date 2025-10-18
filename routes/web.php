@@ -26,6 +26,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         'kelas' => \App\Http\Controllers\KelasController::class,
         'siswa' => \App\Http\Controllers\SiswaController::class,
         'mapel' => \App\Http\Controllers\MapelController::class,
+        'jenis-ujian' => \App\Http\Controllers\JenisUjianController::class,
     ]);
 
     Route::controller(\App\Http\Controllers\GuruMapelController::class)->group(function () {
@@ -52,5 +53,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/get-guru-mapel', [GuruKelasController::class, 'getGuruMapel'])->name('getGuruMapel');
     Route::get('/get-mapel', [GuruKelasController::class, 'getMapel'])->name('getMapel');
 });
+
+Route::get('/get-tahun-akademik', [\App\Http\Controllers\KegiatanKeagamaanController::class, 'getTahunAkademik'])->name('kegiatan-keagamaan.tahun-akademik');
 
 require __DIR__ . '/auth.php';

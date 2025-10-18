@@ -21,6 +21,16 @@ class TahunAkademik extends Model
         'status_aktif' => 'boolean',
     ];
 
+    public function kegiatanKeagamaan()
+    {
+        return $this->hasMany(KegiatanKeagamaan::class, 'tahun_akademik_id');
+    }
+
+    public function jenisUjian()
+    {
+        return $this->hasMany(JenisUjian::class, 'tahun_akademik_id');
+    }
+
     public function scopeAktif(Builder $query): void
     {
         $query->where('status_aktif', true);

@@ -85,9 +85,17 @@
         </li>
         <li class="nav-item">
             <a href="{{ route('admin.guru-kelas.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-chalkboard-teacher"></i>
+                <i class="nav-icon fas fa-chalkboard"></i>
                 <p>
                     Guru Kelas
+                </p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('admin.jenis-ujian.index') }}" class="nav-link">
+                <i class="nav-icon fas fa-file-signature"></i>
+                <p>
+                    Jenis Ujian
                 </p>
             </a>
         </li>
