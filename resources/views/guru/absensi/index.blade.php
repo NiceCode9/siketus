@@ -66,12 +66,12 @@
                                         </td>
                                         <td>
                                             @if ($pertemuan->status == 'completed')
-                                                <a href="{{ route('admin.absensi.edit', $pertemuan->id) }}"
+                                                <a href="{{ route('guru.absensi.edit', $pertemuan->id) }}"
                                                     class="btn btn-sm btn-warning">
                                                     <i class="fas fa-edit"></i> Edit Absensi
                                                 </a>
                                             @else
-                                                <a href="{{ route('admin.absensi.create', $pertemuan->id) }}"
+                                                <a href="{{ route('guru.absensi.create', $pertemuan->id) }}"
                                                     class="btn btn-sm btn-primary">
                                                     <i class="fas fa-check"></i> Mulai Absensi
                                                 </a>

@@ -170,7 +170,7 @@ class JadwalPelajaranController extends Controller
         $jadwal = JadwalPelajaran::with([
             'guruKelas.guruMapel.guru',
             'guruKelas.guruMapel.mapel',
-            'guruKelas.kelas'
+            'guruKelas.kelas.jurusan'
         ])
             ->whereHas('guruKelas', function ($q) use ($tahunAkademikId) {
                 if ($tahunAkademikId) {
@@ -235,7 +235,7 @@ class JadwalPelajaranController extends Controller
             $nextDay = \Carbon\Carbon::now()->next($hariConfig['english']);
 
             $mapel = $j->guruKelas->guruMapel->mapel->nama_mapel ?? '-';
-            $kelas = $j->guruKelas->kelas->nama_kelas ?? '-';
+            $kelas = $j->guruKelas->kelas->nama_lengkap ?? '-';
             $guru = $j->guruKelas->guruMapel->guru->nama ?? '-';
             $ruangan = $j->ruangan ?? 'TBA';
 
@@ -525,7 +525,7 @@ class JadwalPelajaranController extends Controller
             'jadwalPerHari',
             'tahunAkademik',
             'kelas',
-            'hariList'
+            'hariList',
         ))->setPaper('a4', 'landscape');
 
         $filename = 'jadwal-pelajaran';

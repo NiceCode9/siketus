@@ -129,18 +129,50 @@
             </li>
         @endif
 
-        <li class="nav-header">ABSENSI</li>
 
         @if (auth()->user()->hasRole('guru'))
+            <li class="nav-header">ABSENSI</li>
             <li class="nav-item">
-                <a href="{{ route('admin.absensi.index') }}" class="nav-link">
+                <a href="{{ route('guru.absensi.index') }}" class="nav-link">
                     <i class="nav-icon fas fa-check-square"></i>
                     <p>
                         Absensi
                     </p>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('guru.jadwal-guru.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-clock"></i>
+                    <p>
+                        Jadwal Mengajar
+                    </p>
+                </a>
+            </li>
         @endif
+
+        @if (auth()->user()->hasRole('siswa'))
+            <li class="nav-item">
+                <a href="{{ route('siswa.jadwal.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-calendar-alt"></i>
+                    <p>
+                        Jadwal Pelajaran
+                    </p>
+                </a>
+            </li>
+        @endif
+
+        <li class="nav-item">
+            <a href="{{ route('logout') }}" class="nav-link"
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="nav-icon fas fa-sign-out-alt"></i>
+                <p>
+                    Logout
+                </p>
+            </a>
+        </li>
+        <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
+            @csrf
+        </form>
 
     </ul>
 </nav>

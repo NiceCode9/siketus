@@ -75,13 +75,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     });
 
     // Absensi
-    Route::prefix('absensi')->name('absensi.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Absensi\AbsensiController::class, 'index'])->name('index');
-        Route::get('/create/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'create'])->name('create');
-        Route::post('/store/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'store'])->name('store');
-        Route::get('/edit/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'edit'])->name('edit');
-        Route::put('/update/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'update'])->name('update');
-    });
+    // Route::prefix('absensi')->name('absensi.')->group(function () {
+    //     Route::get('/', [\App\Http\Controllers\Absensi\AbsensiController::class, 'index'])->name('index');
+    //     Route::get('/create/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'create'])->name('create');
+    //     Route::post('/store/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'store'])->name('store');
+    //     Route::get('/edit/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'edit'])->name('edit');
+    //     Route::put('/update/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'update'])->name('update');
+    // });
 
     Route::get('/get-guru-mapel', [GuruKelasController::class, 'getGuruMapel'])->name('getGuruMapel');
     Route::get('/get-mapel', [GuruKelasController::class, 'getMapel'])->name('getMapel');
@@ -89,4 +89,6 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
 Route::get('/get-tahun-akademik', [\App\Http\Controllers\KegiatanKeagamaanController::class, 'getTahunAkademik'])->name('kegiatan-keagamaan.tahun-akademik');
 
+require __DIR__ . '/guru.php';
+require __DIR__ . '/siswa.php';
 require __DIR__ . '/auth.php';

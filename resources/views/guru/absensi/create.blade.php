@@ -24,7 +24,7 @@
                             Pertemuan Ke: {{ $pertemuan->pertemuan_ke }}
                         </div>
 
-                        <form action="{{ route('admin.absensi.store', $pertemuan->id) }}" method="POST" id="formAbsensi">
+                        <form action="{{ route('guru.absensi.store', $pertemuan->id) }}" method="POST" id="formAbsensi">
                             @csrf
 
                             <div class="form-group">
@@ -93,7 +93,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save"></i> Simpan Absensi
                                 </button>
-                                <a href="{{ route('admin.absensi.index') }}" class="btn btn-secondary">
+                                <a href="{{ route('guru.absensi.index') }}" class="btn btn-secondary">
                                     <i class="fas fa-arrow-left"></i> Kembali
                                 </a>
                             </div>
