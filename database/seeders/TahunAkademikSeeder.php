@@ -22,8 +22,8 @@ class TahunAkademikSeeder extends Seeder
             ],
             [
                 'nama_tahun_akademik' => '2024/2025',
-                'tanggal_mulai' => '2024-07-01',
-                'tanggal_selesai' => '2025-06-30',
+                'tanggal_mulai' => '2025-10-01',
+                'tanggal_selesai' => '2025-11-30',
                 'status_aktif' => true,
             ],
         ];

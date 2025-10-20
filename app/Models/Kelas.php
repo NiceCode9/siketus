@@ -28,4 +28,9 @@ class Kelas extends Model
     {
         return $this->tingkat . '-' . $this->jurusan->kode_jurusan . '-' .  $this->nama_kelas;
     }
+
+    public function guruKelas()
+    {
+        return $this->hasMany(GuruKelas::class, 'kelas_id');
+    }
 }

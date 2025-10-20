@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             RiwayatKelasSeeder::class,
             KedisiplinanSeeder::class,
             KegiatanKeagamaanSeeder::class,
+            JadwalPelajaranSeeder::class,
         ]);
     }
 }

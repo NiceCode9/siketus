@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,6 +18,8 @@ class TahunAkademik extends Model
 
     protected $casts = [
         'status_aktif' => 'boolean',
+        'tanggal_mulai' => 'date',
+        'tanggal_selesai' => 'date',
     ];
 
     public function kegiatanKeagamaan()
@@ -29,6 +30,16 @@ class TahunAkademik extends Model
     public function jenisUjian()
     {
         return $this->hasMany(JenisUjian::class, 'tahun_akademik_id');
+    }
+
+    public function guruKelas()
+    {
+        return $this->hasMany(GuruKelas::class, 'tahun_akademik_id');
+    }
+
+    public function kalenderAkademik()
+    {
+        return $this->hasMany(KalenderAkademik::class, 'tahun_akademik_id');
     }
 
     public function scopeAktif(Builder $query): void

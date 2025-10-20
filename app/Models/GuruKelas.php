@@ -16,6 +16,10 @@ class GuruKelas extends Model
         'keterangan',
     ];
 
+    protected $casts = [
+        'aktif' => 'boolean',
+    ];
+
     public function guruMapel()
     {
         return $this->belongsTo(GuruMapel::class, 'guru_mapel_id');
@@ -29,5 +33,26 @@ class GuruKelas extends Model
     public function tahunAkademik()
     {
         return $this->belongsTo(TahunAkademik::class, 'tahun_akademik_id');
+    }
+
+    public function jadwalPelajaran()
+    {
+        return $this->hasMany(JadwalPelajaran::class, 'guru_kelas_id');
+    }
+
+    /**
+     * Scope untuk filter aktif
+     */
+    public function scopeAktif($query)
+    {
+        return $query->where('aktif', true);
+    }
+
+    /**
+     * Scope untuk filter berdasarkan tahun akademik
+     */
+    public function scopeByTahunAkademik($query, $tahunAkademikId)
+    {
+        return $query->where('tahun_akademik_id', $tahunAkademikId);
     }
 }

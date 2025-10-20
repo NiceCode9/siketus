@@ -8,97 +8,139 @@
                 </p>
             </a>
         </li>
+        @if (auth()->user()->hasRole('admin'))
+            <li class="nav-header">DATAMASTER</li>
 
-        <li class="nav-header">DATAMASTER</li>
+            <li class="nav-item">
+                <a href="{{ route('admin.tahun-akademik.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-calendar-alt"></i>
+                    <p>
+                        Tahun Akademik
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.jurusan.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-graduation-cap"></i>
+                    <p>
+                        Jurusan
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.kegiatan-keagamaan.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-pray"></i>
+                    <p>
+                        Kegiatan Keagamaan
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.kedisiplinan.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-user-check"></i>
+                    <p>
+                        Kedisiplinan
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.guru.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-chalkboard-teacher"></i>
+                    <p>
+                        Guru
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.kelas.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-graduation-cap"></i>
+                    <p>
+                        Kelas
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.siswa.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-user-graduate"></i>
+                    <p>
+                        Siswa
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.mapel.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-book"></i>
+                    <p>
+                        Mapel
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.guru-mapel.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-chalkboard-teacher"></i>
+                    <p>
+                        Guru Mapel
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.guru-kelas.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-chalkboard"></i>
+                    <p>
+                        Guru Kelas
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.jenis-ujian.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-file-signature"></i>
+                    <p>
+                        Jenis Ujian
+                    </p>
+                </a>
+            </li>
 
-        <li class="nav-item">
-            <a href="{{ route('admin.tahun-akademik.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-calendar-alt"></i>
-                <p>
-                    Tahun Akademik
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.jurusan.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-graduation-cap"></i>
-                <p>
-                    Jurusan
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.kegiatan-keagamaan.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-pray"></i>
-                <p>
-                    Kegiatan Keagamaan
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.kedisiplinan.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-user-check"></i>
-                <p>
-                    Kedisiplinan
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.guru.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-chalkboard-teacher"></i>
-                <p>
-                    Guru
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.kelas.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-graduation-cap"></i>
-                <p>
-                    Kelas
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.siswa.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-user-graduate"></i>
-                <p>
-                    Siswa
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.mapel.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-book"></i>
-                <p>
-                    Mapel
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.guru-mapel.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-chalkboard-teacher"></i>
-                <p>
-                    Guru Mapel
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.guru-kelas.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-chalkboard"></i>
-                <p>
-                    Guru Kelas
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.jenis-ujian.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-file-signature"></i>
-                <p>
-                    Jenis Ujian
-                </p>
-            </a>
-        </li>
+
+            <li class="nav-header">PENJADWALAN</li>
+
+            <li class="nav-item">
+                <a href="{{ route('admin.kalender.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-calendar"></i>
+                    <p>
+                        Kalender Akademik
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.jadwal.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-clock"></i>
+                    <p>
+                        Jadwal Pelajaran
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.pertemuan.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-handshake"></i>
+                    <p>
+                        Pertemuan
+                    </p>
+                </a>
+            </li>
+        @endif
+
+        <li class="nav-header">ABSENSI</li>
+
+        @if (auth()->user()->hasRole('guru'))
+            <li class="nav-item">
+                <a href="{{ route('admin.absensi.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-check-square"></i>
+                    <p>
+                        Absensi
+                    </p>
+                </a>
+            </li>
+        @endif
 
     </ul>
 </nav>

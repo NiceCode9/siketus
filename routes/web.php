@@ -27,7 +27,25 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         'siswa' => \App\Http\Controllers\SiswaController::class,
         'mapel' => \App\Http\Controllers\MapelController::class,
         'jenis-ujian' => \App\Http\Controllers\JenisUjianController::class,
+        'kalender' => \App\Http\Controllers\Absensi\KalenderAkademikController::class,
+        // 'jadwal' => \App\Http\Controllers\Absensi\JadwalPelajaranController::class,
     ]);
+
+    Route::prefix('jadwal')->name('jadwal.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'index'])->name('index');
+        Route::get('/get-kelas', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'getKelas'])->name('get-kelas');
+        Route::get('/get-guru-kelas', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'getGuruKelas'])->name('get-guru-kelas');
+        Route::get('/create', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'create'])->name('create');
+        Route::post('/store', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'store'])->name('store');
+        Route::get('/{jadwal}', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'show'])->name('show');
+        Route::get('/{jadwal}/edit', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'edit'])->name('edit');
+        Route::put('/{jadwal}', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'update'])->name('update');
+        Route::delete('/{jadwal}', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'destroy'])->name('destroy');
+
+        // Export
+        Route::get('/export/pdf', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'exportPdf'])->name('export-pdf');
+        Route::get('/export/excel', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'exportExcel'])->name('export-excel');
+    });
 
     Route::controller(\App\Http\Controllers\GuruMapelController::class)->group(function () {
         Route::get('guru-mapel', 'index')->name('guru-mapel.index');
@@ -48,7 +66,22 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('/{id}', [GuruKelasController::class, 'destroy'])->name('destroy');
     });
 
+    // Management Pertemuan
+    Route::prefix('pertemuan')->name('pertemuan.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Absensi\PertemuanController::class, 'index'])->name('index');
+        Route::post('/generate', [\App\Http\Controllers\Absensi\PertemuanController::class, 'generate'])->name('generate');
+        Route::delete('/reset', [\App\Http\Controllers\Absensi\PertemuanController::class, 'resetPertemuan'])->name('reset');
+        Route::get('/list', [\App\Http\Controllers\Absensi\PertemuanController::class, 'list'])->name('list');
+    });
 
+    // Absensi
+    Route::prefix('absensi')->name('absensi.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Absensi\AbsensiController::class, 'index'])->name('index');
+        Route::get('/create/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'create'])->name('create');
+        Route::post('/store/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'store'])->name('store');
+        Route::get('/edit/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'edit'])->name('edit');
+        Route::put('/update/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'update'])->name('update');
+    });
 
     Route::get('/get-guru-mapel', [GuruKelasController::class, 'getGuruMapel'])->name('getGuruMapel');
     Route::get('/get-mapel', [GuruKelasController::class, 'getMapel'])->name('getMapel');

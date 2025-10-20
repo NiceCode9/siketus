@@ -40,7 +40,7 @@ class SiswaController extends Controller
                     return $btn;
                 })
                 ->addColumn('kelas', function ($row) {
-                    return $row->currentClass ? $row->currentClass->nama_kelas : '-';
+                    return $row->currentClass ? $row->currentClass->nama_lengkap : '-';
                 })
                 ->addColumn('status_badge', function ($row) {
                     $badge = $row->status == 'aktif' ? 'success' : 'secondary';
