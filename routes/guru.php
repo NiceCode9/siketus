@@ -20,4 +20,8 @@ Route::middleware('auth')->prefix('guru')->name('guru.')->group(function () {
         Route::put('/update/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'update'])->name('update');
         Route::get('/history/{jadwal_id}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'history'])->name('history');
     });
+
+    Route::prefix('penilaian')->name('penilaian.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Guru\PenilaianController::class, 'index'])->name('index');
+    });
 });

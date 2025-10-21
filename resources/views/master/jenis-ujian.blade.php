@@ -230,13 +230,14 @@
                     type: "GET",
                     success: function(response) {
                         $('#view-nama-jenis-ujian').text(response.jenis_ujian.nama_jenis_ujian);
-                        $('#view-tahun-akademik').text(response.tahun_akademik.tahun_akademik);
+                        $('#view-tahun-akademik').text(response.tahun_akademik
+                            .nama_tahun_akademik);
 
                         // Status badge
-                        var status = response.tahun_akademik.status;
-                        var badgeClass = status == 'aktif' ? 'success' : 'secondary';
+                        var status = response.tahun_akademik.status_aktif;
+                        var badgeClass = status ? 'success' : 'secondary';
                         var badgeHtml = '<span class="badge badge-' + badgeClass + '">' +
-                            status + '</span>';
+                            (status ? 'Aktif' : 'Tidak Aktif') + '</span>';
                         $('#view-status-tahun').html(badgeHtml);
 
                         $('#view-deskripsi').text(response.jenis_ujian.deskripsi || '-');
