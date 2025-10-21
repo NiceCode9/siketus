@@ -30,4 +30,14 @@ class RiwayatKelas extends Model
     {
         return $this->belongsTo(TahunAkademik::class, 'tahun_akademik_id');
     }
+
+    public function scopeAktif($query)
+    {
+        return $query->where('status', 'aktif');
+    }
+
+    public function scopeByTahunAkademik($query, $tahunAkademikId)
+    {
+        return $query->where('tahun_akademik_id', $tahunAkademikId);
+    }
 }

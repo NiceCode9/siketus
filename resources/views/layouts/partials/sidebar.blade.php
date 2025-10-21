@@ -151,13 +151,28 @@
 
             <li class="nav-header">PENILAIAN</li>
 
-            <li class="nav-item">
-                <a href="{{ route('guru.penilaian.index') }}" class="nav-link">
+            <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
                     <i class="nav-icon fas fa-file-alt"></i>
                     <p>
                         Penilaian
+                        <i class="right fas fa-angle-left"></i>
                     </p>
                 </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="{{ route('guru.penilaian.index') }}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Input Nilai</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('guru.riwayat-penilaian.index') }}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Riwayat Penilaian</p>
+                        </a>
+                    </li>
+                </ul>
             </li>
         @endif
 

@@ -33,4 +33,24 @@ class Kelas extends Model
     {
         return $this->hasMany(GuruKelas::class, 'kelas_id');
     }
+
+    public function penilaianKedisiplinan()
+    {
+        return $this->hasMany(PenilaianKedisiplinan::class, 'kelas_id');
+    }
+
+    public function penilaianKeagamaan()
+    {
+        return $this->hasMany(PenilaianKeagamaan::class, 'kelas_id');
+    }
+
+    public function penilaianMapel()
+    {
+        return $this->hasMany(PenilaianMapel::class, 'kelas_id');
+    }
+
+    public function riwayatKelas()
+    {
+        return $this->hasMany(RiwayatKelas::class, 'kelas_id');
+    }
 }

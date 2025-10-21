@@ -19,4 +19,19 @@ class Guru extends Model
     {
         return $this->hasOne(User::class, 'guru_id');
     }
+
+    public function penilaianKedisiplinan()
+    {
+        return $this->hasMany(PenilaianKedisiplinan::class, 'guru_id');
+    }
+
+    public function penilaianKeagamaan()
+    {
+        return $this->hasMany(PenilaianKeagamaan::class, 'guru_id');
+    }
+
+    public function guruMapel()
+    {
+        return $this->hasMany(GuruMapel::class, 'guru_id');
+    }
 }

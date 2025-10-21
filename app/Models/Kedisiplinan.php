@@ -11,4 +11,9 @@ class Kedisiplinan extends Model
     protected $fillable = [
         'jenis',
     ];
+
+    public function penilaianKedisiplinan()
+    {
+        return $this->hasMany(PenilaianKedisiplinan::class, 'kedisiplinan_id');
+    }
 }

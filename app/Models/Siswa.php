@@ -29,4 +29,19 @@ class Siswa extends Model
     {
         return $this->belongsTo(Kelas::class, 'current_class_id');
     }
+
+    public function penilaianKedisiplinan()
+    {
+        return $this->hasMany(PenilaianKedisiplinan::class, 'siswa_id');
+    }
+
+    public function penilaianKeagamaan()
+    {
+        return $this->hasMany(PenilaianKeagamaan::class, 'siswa_id');
+    }
+
+    public function penilaianMapel()
+    {
+        return $this->hasMany(PenilaianMapel::class, 'siswa_id');
+    }
 }

@@ -21,6 +21,11 @@ class KegiatanKeagamaan extends Model
         return $this->belongsTo(TahunAkademik::class);
     }
 
+    public function penilaianKeagamaan()
+    {
+        return $this->hasMany(PenilaianKeagamaan::class, 'kegiatan_keagamaan_id');
+    }
+
     // protected function semester(): Attribute
     // {
     //     return Attribute::make(

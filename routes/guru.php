@@ -21,7 +21,14 @@ Route::middleware('auth')->prefix('guru')->name('guru.')->group(function () {
         Route::get('/history/{jadwal_id}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'history'])->name('history');
     });
 
-    Route::prefix('penilaian')->name('penilaian.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Guru\PenilaianController::class, 'index'])->name('index');
-    });
+    // Routes Penilaian
+    Route::get('/penilaian', [\App\Http\Controllers\Guru\PenilaianController::class, 'index'])->name('penilaian.index');
+    Route::get('/penilaian/create', [\App\Http\Controllers\Guru\PenilaianController::class, 'create'])->name('penilaian.create');
+    Route::post('/penilaian', [\App\Http\Controllers\Guru\PenilaianController::class, 'store'])->name('penilaian.store');
+
+    // Routes Riwayat Penilaian
+    Route::get('/riwayat-penilaian/guru', [\App\Http\Controllers\RiwayatPenilaianController::class, 'guruIndex'])
+        ->name('riwayat-penilaian.index');
+    Route::get('/riwayat-penilaian/guru/{siswa}/detail', [\App\Http\Controllers\RiwayatPenilaianController::class, 'guruDetail'])
+        ->name('riwayat-penilaian.detail');
 });

@@ -18,4 +18,9 @@ class JenisUjian extends Model
     {
         return $this->belongsTo(TahunAkademik::class, 'tahun_akademik_id');
     }
+
+    public function penilaianMapel()
+    {
+        return $this->hasMany(PenilaianMapel::class, 'jenis_ujian_id');
+    }
 }

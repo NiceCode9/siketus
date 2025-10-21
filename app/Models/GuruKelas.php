@@ -55,4 +55,9 @@ class GuruKelas extends Model
     {
         return $query->where('tahun_akademik_id', $tahunAkademikId);
     }
+
+    public function penilaianMapel()
+    {
+        return $this->hasMany(PenilaianMapel::class, 'guru_kelas_id');
+    }
 }
