@@ -185,6 +185,30 @@
                     </p>
                 </a>
             </li>
+
+            <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-file-alt"></i>
+                    <p>
+                        Penilaian
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="{{ route('siswa.penilaian.index') }}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Input Nilai</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('siswa.riwayat-penilaian.siswa.index') }}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Riwayat Penilaian</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
         @endif
 
         <li class="nav-item">

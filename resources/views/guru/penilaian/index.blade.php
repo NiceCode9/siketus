@@ -37,7 +37,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="form-group">
                             <label for="kelas_id">Kelas <span class="text-danger">*</span></label>
                             <select name="kelas_id" id="kelas_id" class="form-control" required>
@@ -52,7 +52,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="form-group">
                             <label for="semester">Semester <span class="text-danger">*</span></label>
                             <select name="semester" id="semester" class="form-control" required>
@@ -64,7 +64,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="form-group">
                             <label for="kategori">Kategori Penilaian <span class="text-danger">*</span></label>
                             <select name="kategori" id="kategori" class="form-control" required>
@@ -77,6 +77,19 @@
                                     Keagamaan</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div class="col-md-3 {{ $selectedKategori == 'mapel' ? '' : 'd-none' }}" id="mapel_id_div">
+                        <label for="mapel_id">Mata Pelajaran</label>
+                        <select name="mapel_id" id="mapel_id" class="form-control">
+                            <option value="">-- Pilih Mata Pelajaran --</option>
+                            @foreach (auth()->user()->guru->guruMapel as $mapel)
+                                <option value="{{ $mapel->mapel->id }}"
+                                    {{ $selectedMapel == $mapel->mapel->id ? 'selected' : '' }}>
+                                    {{ $mapel->mapel->nama_mapel }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
@@ -140,6 +153,7 @@
                                         'kelas_id' => $selectedKelas,
                                         'semester' => $selectedSemester,
                                         'kategori' => $selectedKategori,
+                                        'mapel_id' => $selectedMapel,
                                     ]) }}"
                                         class="btn btn-sm btn-primary" title="Input Nilai">
                                         <i class="fas fa-edit"></i> Input Nilai
@@ -187,6 +201,20 @@
                     $('#semester').val('');
                     $('#kategori').val('');
                     $('#filterForm').submit();
+                }
+            });
+
+            $('#kategori').change(function(e) {
+                e.preventDefault();
+
+                let val = $(this).val();
+                if (val == 'mapel') {
+                    $('#mapel_id_div').removeClass('d-none');
+                    $('#mapel_id').prop('required', true);
+                } else {
+                    $('#mapel_id_div').addClass('d-none');
+                    $('#mapel_id').prop('required', false);
+                    $('#mapel_id').val('');
                 }
             });
         });

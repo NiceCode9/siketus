@@ -20,7 +20,7 @@
                         </tr>
                         <tr>
                             <th>Kelas</th>
-                            <td>: {{ $kelas->nama_kelas }}</td>
+                            <td>: {{ $kelas->nama_lengkap }}</td>
                         </tr>
                     </table>
                 </div>
@@ -60,6 +60,9 @@
         <input type="hidden" name="kelas_id" value="{{ $kelas->id }}">
         <input type="hidden" name="semester" value="{{ $semester }}">
         <input type="hidden" name="kategori" value="{{ $kategori }}">
+        @if ($kategori == 'mapel')
+            <input type="hidden" name="mapel_id" value="{{ $mapelId }}">
+        @endif
 
         <div class="card">
             <div class="card-header">
@@ -87,6 +90,7 @@
                                 <tr>
                                     <th width="50">No</th>
                                     <th>Jenis Ujian</th>
+                                    <th width="150">Nilai by siswa (0-100)</th>
                                     <th width="150">Nilai (0-100)</th>
                                     <th>Catatan</th>
                                 </tr>
@@ -100,6 +104,12 @@
                                             @if ($jenisUjian->deskripsi)
                                                 <br><small class="text-muted">{{ $jenisUjian->deskripsi }}</small>
                                             @endif
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control" min="0" max="100"
+                                                step="0.01"
+                                                value="{{ $existingNilai[$jenisUjian->id]->nilai_by_siswa ?? '' }}"
+                                                placeholder="0-100" readonly>
                                         </td>
                                         <td>
                                             <input type="number" name="nilai[{{ $jenisUjian->id }}]" class="form-control"
@@ -213,13 +223,19 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i> Simpan Nilai
                 </button>
-                <a href="{{ route('guru.penilaian.index', [
-                    'tahun_akademik_id' => $tahunAkademik->id,
-                    'kelas_id' => $kelas->id,
-                    'semester' => $semester,
-                    'kategori' => $kategori,
-                ]) }}"
-                    class="btn btn-secondary">
+                @php
+                    $data = [
+                        'tahun_akademik_id' => $tahunAkademik->id,
+                        'kelas_id' => $kelas->id,
+                        'semester' => $semester,
+                        'kategori' => $kategori,
+                    ];
+
+                    if ($kategori == 'mapel') {
+                        $data['mapel_id'] = $mapelId ?? '';
+                    }
+                @endphp
+                <a href="{{ route('guru.penilaian.index', $data) }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
             </div>

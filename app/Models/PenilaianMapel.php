@@ -16,6 +16,7 @@ class PenilaianMapel extends Model
         'kelas_id',
         'semester',
         'nilai',
+        'nilai_by_siswa',
         'catatan',
     ];
 

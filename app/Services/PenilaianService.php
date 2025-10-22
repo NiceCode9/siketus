@@ -72,11 +72,11 @@ class PenilaianService
     /**
      * Get guru kelas by guru and kelas
      */
-    public function getGuruKelas($guruId, $kelasId, $tahunAkademikId)
+    public function getGuruKelas($guruId, $kelasId, $tahunAkademikId, $mapelId)
     {
         return GuruKelas::with(['guruMapel.mapel'])
-            ->whereHas('guruMapel', function ($q) use ($guruId) {
-                $q->where('guru_id', $guruId);
+            ->whereHas('guruMapel', function ($q) use ($guruId, $mapelId) {
+                $q->where('guru_id', $guruId)->where('mapel_id', $mapelId);
             })
             ->where('kelas_id', $kelasId)
             ->where('tahun_akademik_id', $tahunAkademikId)
@@ -128,7 +128,8 @@ class PenilaianService
         $guruKelas = $this->getGuruKelas(
             $data['guru_id'],
             $data['kelas_id'],
-            $data['tahun_akademik_id']
+            $data['tahun_akademik_id'],
+            $data['mapel_id']
         );
 
         if (!$guruKelas) {
@@ -160,6 +161,7 @@ class PenilaianService
             return true;
         } catch (\Exception $e) {
             DB::rollBack();
+            dd($e->getMessage());
             throw $e;
         }
     }
@@ -252,12 +254,13 @@ class PenilaianService
     /**
      * Get data for create/edit form based on kategori
      */
-    public function getFormData($siswaId, $tahunAkademikId, $kelasId, $semester, $kategori, $guruId)
+    public function getFormData($siswaId, $tahunAkademikId, $kelasId, $semester, $kategori, $guruId, $mapelId)
     {
         $data = [];
 
         if ($kategori === 'mapel') {
-            $guruKelas = $this->getGuruKelas($guruId, $kelasId, $tahunAkademikId);
+            $guruKelas = $this->getGuruKelas($guruId, $kelasId, $tahunAkademikId, $mapelId);
+            $data['mapelId'] = $mapelId;
             $data['guruKelas'] = $guruKelas;
             $data['jenisUjianList'] = $this->getJenisUjianList($tahunAkademikId);
             $data['existingNilai'] = $this->getExistingNilaiMapel($siswaId, $guruKelas->id, $semester);

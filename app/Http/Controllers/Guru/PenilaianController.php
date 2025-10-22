@@ -29,6 +29,7 @@ class PenilaianController extends Controller
         $selectedKelas = $request->kelas_id;
         $selectedSemester = $request->semester;
         $selectedKategori = $request->kategori;
+        $selectedMapel = $request->mapel_id;
 
         $guru = Auth::user()->guru;
         $kelasList = [];
@@ -49,7 +50,7 @@ class PenilaianController extends Controller
                 // Get data berdasarkan kategori
                 if ($selectedKategori === 'mapel') {
                     $jenisUjianList = $this->penilaianService->getJenisUjianList($selectedTahunAkademik);
-                    $guruKelas = $this->penilaianService->getGuruKelas($guru->id, $selectedKelas, $selectedTahunAkademik);
+                    $guruKelas = $this->penilaianService->getGuruKelas($guru->id, $selectedKelas, $selectedTahunAkademik, $selectedMapel);
                 } elseif ($selectedKategori === 'kedisiplinan') {
                     $kedisiplinanList = $this->penilaianService->getKedisiplinanList();
                 } elseif ($selectedKategori === 'keagamaan') {
@@ -69,7 +70,8 @@ class PenilaianController extends Controller
             'jenisUjianList',
             'kedisiplinanList',
             'kegiatanKeagamaanList',
-            'guruKelas'
+            'guruKelas',
+            'selectedMapel'
         ));
     }
 
@@ -89,7 +91,8 @@ class PenilaianController extends Controller
             $kelas->id,
             $semester,
             $kategori,
-            $guru->id
+            $guru->id,
+            $request->mapel_id
         );
 
         $data = array_merge(
@@ -108,6 +111,7 @@ class PenilaianController extends Controller
             'kelas_id' => 'required|exists:kelas,id',
             'semester' => 'required|in:ganjil,genap',
             'kategori' => 'required|in:mapel,kedisiplinan,keagamaan',
+            'mapel_id' => 'required_if:kategori,mapel|exists:mapel,id',
         ]);
 
         $guru = Auth::user()->guru;
@@ -118,6 +122,7 @@ class PenilaianController extends Controller
                 'guru_id' => $guru->id,
                 'nilai' => $request->nilai,
                 'catatan' => $request->catatan,
+                'mapel_id' => $request->mapel_id,
             ]);
 
             // Call service untuk store penilaian
@@ -127,7 +132,8 @@ class PenilaianController extends Controller
                 'tahun_akademik_id' => $validated['tahun_akademik_id'],
                 'kelas_id' => $validated['kelas_id'],
                 'semester' => $validated['semester'],
-                'kategori' => $validated['kategori']
+                'kategori' => $validated['kategori'],
+                'mapel_id' => $validated['mapel_id'],
             ])->with('success', 'Penilaian berhasil disimpan');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
