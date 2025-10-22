@@ -97,7 +97,7 @@ class AbsensiController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.absensi.index')
+            return redirect()->route('guru.absensi.index')
                 ->with('success', 'Absensi berhasil disimpan!');
         } catch (\Exception $e) {
             DB::rollBack();
