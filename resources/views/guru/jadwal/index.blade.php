@@ -248,7 +248,7 @@
                                                             </td>
                                                             <td>
                                                                 <i class="fas fa-users"></i>
-                                                                {{ $jadwal->guruKelas->kelas->nama_kelas }}
+                                                                {{ $jadwal->guruKelas->kelas->nama_lengkap }}
                                                             </td>
                                                             <td>
                                                                 <i class="fas fa-door-open"></i>

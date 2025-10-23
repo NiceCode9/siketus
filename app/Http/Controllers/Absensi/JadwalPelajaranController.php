@@ -77,7 +77,7 @@ class JadwalPelajaranController extends Controller
                     \Carbon\Carbon::parse($row->jam_selesai)->format('H:i');
             })
             ->addColumn('kelas', function ($row) {
-                return $row->guruKelas->kelas->nama_kelas ?? '-';
+                return $row->guruKelas->kelas->nama_lengkap ?? '-';
             })
             ->addColumn('mapel', function ($row) {
                 $mapel = $row->guruKelas->guruMapel->mapel->nama_mapel ?? '-';

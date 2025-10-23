@@ -87,11 +87,11 @@ class PenilaianService
     /**
      * Get existing nilai mapel
      */
-    public function getExistingNilaiMapel($siswaId, $guruKelasId, $semester)
+    public function getExistingNilaiMapel($siswaId, $guruKelasId, $semester = 'genap')
     {
         return PenilaianMapel::where('siswa_id', $siswaId)
             ->where('guru_kelas_id', $guruKelasId)
-            ->where('semester', $semester)
+            // ->where('semester', $semester)
             ->get()
             ->keyBy('jenis_ujian_id');
     }
@@ -273,5 +273,104 @@ class PenilaianService
         }
 
         return $data;
+    }
+
+
+
+    // Proses untuk controller siswa
+    public function getNilaiDataForSiswa($siswaId, $guruKelasIds)
+    {
+        $nilaiData = [];
+
+        foreach ($guruKelasIds as $guruKelasId) {
+            $nilaiMapel = PenilaianMapel::where('guru_kelas_id', $guruKelasId)
+                ->where('siswa_id', $siswaId)
+                ->get();
+
+            foreach ($nilaiMapel as $nilai) {
+                $nilaiData[$guruKelasId][$nilai->jenis_ujian_id] = $nilai->nilai_by_siswa ?? '';
+            }
+        }
+
+        return $nilaiData;
+    }
+
+    public function getNilaiGuruForValidation($guruKelasId, $jenisUjianId, $siswaId)
+    {
+        $penilaian = PenilaianMapel::where('guru_kelas_id', $guruKelasId)
+            ->where('jenis_ujian_id', $jenisUjianId)
+            ->where('siswa_id', $siswaId)
+            ->first();
+
+        return $penilaian ? $penilaian->nilai : null;
+    }
+
+    /**
+     * Validasi nilai siswa terhadap nilai guru
+     */
+    public function validateNilaiSiswaAgainstGuru($siswaId, $nilaiArray)
+    {
+        $errors = [];
+        $valid = true;
+
+        foreach ($nilaiArray as $guruKelasId => $jenisUjianNilai) {
+            foreach ($jenisUjianNilai as $jenisUjianId => $nilaiSiswa) {
+                if ($nilaiSiswa === null || $nilaiSiswa === '') {
+                    continue;
+                }
+
+                // Cek nilai yang diinput oleh guru
+                $nilaiGuru = $this->getNilaiGuruForValidation($guruKelasId, $jenisUjianId, $siswaId);
+
+                if ($nilaiGuru !== null && $nilaiSiswa > $nilaiGuru) {
+                    $errors[$guruKelasId][$jenisUjianId] = [
+                        'message' => "Nilai tidak boleh melebihi {$nilaiGuru}",
+                        'max_nilai' => $nilaiGuru,
+                        'input_nilai' => $nilaiSiswa
+                    ];
+                    $valid = false;
+                }
+            }
+        }
+
+        return [
+            'valid' => $valid,
+            'errors' => $errors
+        ];
+    }
+
+    /**
+     * Store nilai mapel by siswa
+     */
+    public function storeNilaiMapelBySiswa(array $data)
+    {
+        DB::beginTransaction();
+        try {
+            foreach ($data['nilai'] as $guruKelasId => $jenisUjianNilai) {
+                foreach ($jenisUjianNilai as $jenisUjianId => $nilai) {
+                    if ($nilai !== null && $nilai !== '') {
+                        PenilaianMapel::updateOrCreate(
+                            [
+                                'siswa_id' => $data['siswa_id'],
+                                'guru_kelas_id' => $guruKelasId,
+                                'jenis_ujian_id' => $jenisUjianId,
+                                'semester' => $data['semester'],
+                            ],
+                            [
+                                'tahun_akademik_id' => $data['tahun_akademik_id'],
+                                'kelas_id' => $data['kelas_id'],
+                                'nilai_by_siswa' => $nilai,
+                            ]
+                        );
+                    }
+                }
+            }
+
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 }

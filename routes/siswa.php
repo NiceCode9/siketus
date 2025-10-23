@@ -16,6 +16,8 @@ Route::middleware('auth')->prefix('siswa')->name('siswa.')->group(function () {
 
     Route::prefix('penilaian')->name('penilaian.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Siswa\PenilaianSiswaController::class, 'index'])->name('index');
+        Route::post('/store', [\App\Http\Controllers\Siswa\PenilaianSiswaController::class, 'store'])->name('store');
+        Route::get('/get-nilai-guru', [\App\Http\Controllers\Siswa\PenilaianSiswaController::class, 'getNilaiGuru'])->name('get-nilai-guru');
     });
 
     // Routes Riwayat Penilaian - SISWA
