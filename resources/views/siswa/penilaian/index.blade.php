@@ -87,21 +87,33 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Validasi real-time saat input
-            $('.nilai-input').on('blur', function() {
+            // Fungsi debounce untuk menunda eksekusi sampai user berhenti mengetik
+            function debounce(func, delay) {
+                let timer;
+                return function(...args) {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => func.apply(this, args), delay);
+                };
+            }
+
+            $('.nilai-input').on('input', debounce(function() {
                 var input = $(this);
                 var guruKelasId = input.data('guru-kelas');
                 var jenisUjianId = input.data('jenis-ujian');
                 var nilaiSiswa = parseFloat(input.val());
                 var errorMsg = $(`small[data-error="${guruKelasId}-${jenisUjianId}"]`);
 
-                if (!nilaiSiswa || nilaiSiswa === '') {
+                // Jika input kosong atau bukan angka valid
+                if (isNaN(nilaiSiswa)) {
                     input.removeClass('is-invalid');
                     errorMsg.addClass('d-none').text('');
                     return;
                 }
 
-                // Ajax request untuk validasi
+                // Simpan timestamp request agar hasil lama tidak menimpa hasil baru
+                var requestTime = Date.now();
+                input.data('last-request', requestTime);
+
                 $.ajax({
                     url: '{{ route('siswa.penilaian.get-nilai-guru') }}',
                     method: 'GET',
@@ -110,6 +122,9 @@
                         jenis_ujian_id: jenisUjianId
                     },
                     success: function(response) {
+                        // Cek apakah ini masih request terbaru
+                        if (input.data('last-request') !== requestTime) return;
+
                         if (response.success && response.nilai !== null) {
                             var nilaiGuru = parseFloat(response.nilai);
 
@@ -130,7 +145,52 @@
                         console.error('Gagal memvalidasi nilai');
                     }
                 });
-            });
+            }, 400)); // 400ms delay debounce
+
+            // // Validasi real-time saat input
+            // $('.nilai-input').on('keyup', function() {
+            //     var input = $(this);
+            //     var guruKelasId = input.data('guru-kelas');
+            //     var jenisUjianId = input.data('jenis-ujian');
+            //     var nilaiSiswa = parseFloat(input.val());
+            //     var errorMsg = $(`small[data-error="${guruKelasId}-${jenisUjianId}"]`);
+
+            //     if (!nilaiSiswa || nilaiSiswa === '') {
+            //         input.removeClass('is-invalid');
+            //         errorMsg.addClass('d-none').text('');
+            //         return;
+            //     }
+
+            //     // Ajax request untuk validasi
+            //     $.ajax({
+            //         url: '{{ route('siswa.penilaian.get-nilai-guru') }}',
+            //         method: 'GET',
+            //         data: {
+            //             guru_kelas_id: guruKelasId,
+            //             jenis_ujian_id: jenisUjianId
+            //         },
+            //         success: function(response) {
+            //             if (response.success && response.nilai !== null) {
+            //                 var nilaiGuru = parseFloat(response.nilai);
+
+            //                 if (nilaiSiswa > nilaiGuru) {
+            //                     input.addClass('is-invalid');
+            //                     errorMsg.removeClass('d-none')
+            //                         .text(`Nilai tidak boleh melebihi ${nilaiGuru}`);
+            //                 } else {
+            //                     input.removeClass('is-invalid');
+            //                     errorMsg.addClass('d-none').text('');
+            //                 }
+            //             } else {
+            //                 input.removeClass('is-invalid');
+            //                 errorMsg.addClass('d-none').text('');
+            //             }
+            //         },
+            //         error: function() {
+            //             console.error('Gagal memvalidasi nilai');
+            //         }
+            //     });
+            // });
 
             // Hitung rata-rata
             $('.nilai-input').on('input', function() {

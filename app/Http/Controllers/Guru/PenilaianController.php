@@ -128,13 +128,19 @@ class PenilaianController extends Controller
             // Call service untuk store penilaian
             $this->penilaianService->storePenilaian($data);
 
-            return redirect()->route('guru.penilaian.index', [
+            $redirectParams = [
                 'tahun_akademik_id' => $validated['tahun_akademik_id'],
                 'kelas_id' => $validated['kelas_id'],
                 'semester' => $validated['semester'],
                 'kategori' => $validated['kategori'],
-                'mapel_id' => $validated['mapel_id'],
-            ])->with('success', 'Penilaian berhasil disimpan');
+            ];
+
+            if ($validated['kategori'] === 'mapel') {
+                $redirectParams['mapel_id'] = $validated['mapel_id'];
+            }
+
+            return redirect()->route('guru.penilaian.index', $redirectParams)
+                ->with('success', 'Penilaian berhasil disimpan');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
