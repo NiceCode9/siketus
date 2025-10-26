@@ -83,6 +83,15 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     //     Route::put('/update/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'update'])->name('update');
     // });
 
+    // Rekap Absensi
+    Route::prefix('rekap')->name('rekap.')->group(function () {
+        Route::get('/per-kelas', [\App\Http\Controllers\RekapAbsensiController::class, 'perKelas'])->name('per-kelas');
+        Route::get('/per-siswa/{siswa}', [\App\Http\Controllers\RekapAbsensiController::class, 'perSiswa'])->name('per-siswa');
+
+        // Optional: Export Excel
+        // Route::get('/per-kelas/export', [RekapAbsensiController::class, 'exportKelas'])->name('per-kelas.export');
+    });
+
     Route::get('/get-guru-mapel', [GuruKelasController::class, 'getGuruMapel'])->name('getGuruMapel');
     Route::get('/get-mapel', [GuruKelasController::class, 'getMapel'])->name('getMapel');
 });
