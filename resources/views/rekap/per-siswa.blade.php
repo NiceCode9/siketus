@@ -14,7 +14,7 @@
                                 <table class="table table-bordered">
                                     <tr>
                                         <th width="30%">NIS</th>
-                                        <td>{{ $siswa->nis }}</td>
+                                        <td>{{ $siswa->nisn }}</td>
                                     </tr>
                                     <tr>
                                         <th>Nama</th>

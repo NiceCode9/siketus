@@ -22,6 +22,16 @@
                                 <input type="date" name="tanggal" class="form-control" value="{{ $tanggal }}"
                                     onchange="this.form.submit()">
                             </div>
+                            <div class="col-md-4">
+                                <label>Kelas:</label>
+                                <select name="kelas" class="form-control" onchange="this.form.submit()">
+                                    <option value="">-- Semua Kelas --</option>
+                                    @foreach ($kelasList as $kelas)
+                                        <option value="{{ $kelas->id }}" {{ $kelasId == $kelas->id ? 'selected' : '' }}>
+                                            {{ $kelas->nama_lengkap }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                     </form>
 

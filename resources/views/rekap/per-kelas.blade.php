@@ -77,7 +77,7 @@
                                         @forelse($rekap as $key => $data)
                                             <tr>
                                                 <td>{{ $key + 1 }}</td>
-                                                <td>{{ $data->nis }}</td>
+                                                <td>{{ $data->nisn }}</td>
                                                 <td>{{ $data->nama_siswa }}</td>
                                                 <td class="text-center">
                                                     <span class="badge badge-success">{{ $data->hadir }}</span>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Absensi;
 
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
+use App\Models\Kelas;
 use App\Models\Pertemuan;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
@@ -18,6 +19,9 @@ class AbsensiController extends Controller
     public function index(Request $request)
     {
         $tanggal = $request->get('tanggal', now()->format('Y-m-d'));
+        $kelasId = $request->get('kelas');
+        $kelasList = Kelas::with('jurusan')->get()
+            ->sortBy('nama_lengkap')->values();
         $guruId = Auth::user()->guru_id; // Asumsi user login punya relasi ke guru
 
         $pertemuanList = Pertemuan::with([
@@ -28,11 +32,16 @@ class AbsensiController extends Controller
             ->whereHas('jadwalPelajaran.guruKelas.guruMapel', function ($q) use ($guruId) {
                 $q->where('guru_id', $guruId);
             })
+            ->when($kelasId, function ($q) use ($kelasId) {
+                $q->whereHas('jadwalPelajaran.guruKelas', function ($q2) use ($kelasId) {
+                    $q2->where('kelas_id', $kelasId);
+                });
+            })
             ->where('tanggal', $tanggal)
             ->orderBy('jam_mulai_aktual')
             ->get();
 
-        return view('guru.absensi.index', compact('pertemuanList', 'tanggal'));
+        return view('guru.absensi.index', compact('pertemuanList', 'tanggal', 'kelasList', 'kelasId'));
     }
 
     /**

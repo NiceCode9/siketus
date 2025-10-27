@@ -26,7 +26,8 @@ class RekapAbsensiController extends Controller
             $tahunAkademikId = $tahunAkademik?->id;
         }
 
-        $kelasList = Kelas::orderBy('tingkat')->get();
+        $kelasList = Kelas::with('jurusan')->get()
+            ->sortBy('nama_lengkap')->values();
         $mapelList = Mapel::orderBy('nama_mapel')->get();
         $tahunAkademikList = TahunAkademik::orderBy('created_at', 'desc')->get();
 
