@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\GuruKelas;
 use App\Models\JadwalPelajaran;
 use App\Models\Kelas;
+use App\Models\Mapel;
 use App\Models\TahunAkademik;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -219,16 +220,22 @@ class JadwalPelajaranController extends Controller
             ]
         ];
 
-        $mapelColors = [
-            'Matematika' => '#007bff',
-            'Fisika' => '#28a745',
-            'Kimia' => '#17a2b8',
-            'Biologi' => '#20c997',
-            'Bahasa Indonesia' => '#fd7e14',
-            'Bahasa Inggris' => '#ffc107',
-            'Sejarah' => '#6f42c1',
-            'Geografi' => '#e83e8c',
-        ];
+        $mapel = Mapel::orderBy('nama_mapel')->get()->pluck('nama_mapel')->toArray();
+
+        // $mapelColors = [
+        //     'Matematika' => '#007bff',
+        //     'Fisika' => '#28a745',
+        //     'Kimia' => '#17a2b8',
+        //     'Biologi' => '#20c997',
+        //     'Bahasa Indonesia' => '#fd7e14',
+        //     'Bahasa Inggris' => '#ffc107',
+        //     'Sejarah' => '#6f42c1',
+        //     'Geografi' => '#e83e8c',
+        // ];
+
+        foreach ($mapel as $m) {
+            $mapelColors[$m] = $this->getRandomColor();
+        }
 
         foreach ($jadwal as $j) {
             $hariConfig = $hariMapping[$j->hari] ?? $hariMapping['Senin'];
@@ -257,6 +264,16 @@ class JadwalPelajaranController extends Controller
         }
 
         return response()->json($events);
+    }
+
+    private function getRandomColor()
+    {
+        $letters = '0123456789ABCDEF';
+        $color = '#';
+        for ($i = 0; $i < 6; $i++) {
+            $color .= $letters[rand(0, 15)];
+        }
+        return $color;
     }
 
     public function getKelas(Request $request)
