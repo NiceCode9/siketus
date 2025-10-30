@@ -14,6 +14,12 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        @if (session('error'))
+                            <div class="alert alert-danger alert-dismissible fade show">
+                                {{ session('error') }}
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            </div>
+                        @endif
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <div class="info-box bg-info">

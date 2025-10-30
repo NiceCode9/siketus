@@ -92,6 +92,14 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="{{ route('admin.kenaikan-kelas.index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-level-up-alt"></i>
+                    <p>
+                        Kenaikan Kelas
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{{ route('admin.jenis-ujian.index') }}" class="nav-link">
                     <i class="nav-icon fas fa-file-signature"></i>
                     <p>

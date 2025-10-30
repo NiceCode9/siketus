@@ -134,7 +134,7 @@ class KenaikanKelasController extends Controller
         DB::beginTransaction();
 
         try {
-            $tahunAkademikAktif = TahunAkademik::where('status', 'aktif')->first();
+            $tahunAkademikAktif = TahunAkademik::aktif()->first();
             $tahunAkademikBaru = TahunAkademik::find($request->tahun_akademik_baru_id);
 
             foreach ($request->siswa as $siswaData) {
@@ -198,7 +198,7 @@ class KenaikanKelasController extends Controller
         DB::beginTransaction();
 
         try {
-            $tahunAkademikAktif = TahunAkademik::where('status', 'aktif')->first();
+            $tahunAkademikAktif = TahunAkademik::aktif()->first();
             $tahunAkademikBaru = TahunAkademik::find($request->tahun_akademik_baru_id);
 
             // Ambil semua siswa aktif
