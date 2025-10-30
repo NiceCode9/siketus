@@ -92,6 +92,14 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         // Route::get('/per-kelas/export', [RekapAbsensiController::class, 'exportKelas'])->name('per-kelas.export');
     });
 
+    // Routes Kenaikan Kelas
+    Route::prefix('kenaikan-kelas')->name('kenaikan-kelas.')->group(function () {
+        Route::get('/', [App\Http\Controllers\KenaikanKelasController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\KenaikanKelasController::class, 'create'])->name('create');
+        Route::post('/store', [App\Http\Controllers\KenaikanKelasController::class, 'store'])->name('store');
+        Route::post('/naikkan-massal', [App\Http\Controllers\KenaikanKelasController::class, 'naikkanMassal'])->name('naikkan-massal');
+    });
+
     Route::get('/get-guru-mapel', [GuruKelasController::class, 'getGuruMapel'])->name('getGuruMapel');
     Route::get('/get-mapel', [GuruKelasController::class, 'getMapel'])->name('getMapel');
 });

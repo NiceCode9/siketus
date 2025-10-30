@@ -12,7 +12,7 @@ class RiwayatKelas extends Model
         'siswa_id',
         'kelas_id',
         'tahun_akademik_id',
-        'status',
+        'status', // ['aktif', 'lulus', 'pindah', 'dropout']
         'keterangan',
     ];
 
