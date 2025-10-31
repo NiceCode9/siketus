@@ -18,7 +18,7 @@ class KenaikanKelasController extends Controller
     public function index(Request $request)
     {
         // Ambil tahun akademik aktif
-        $tahunAkademikAktif = TahunAkademik::where('status_aktif', 'aktif')->first();
+        $tahunAkademikAktif = TahunAkademik::aktif()->first();
 
         // Ambil semua tahun akademik untuk dropdown
         $tahunAkademikList = TahunAkademik::orderBy('nama_tahun_akademik', 'desc')->get();
@@ -148,11 +148,11 @@ class KenaikanKelasController extends Controller
                 RiwayatKelas::where('siswa_id', $siswa->id)
                     ->where('tahun_akademik_id', $tahunAkademikAktif->id)
                     ->where('status', 'aktif')
-                    ->update(['status' => 'selesai']);
+                    ->update(['status' => 'naik_kelas']);
 
                 // Tentukan status baru berdasarkan pilihan
                 $statusBaru = 'aktif';
-                if (in_array($siswaData['status'], ['lulus', 'pindah', 'dropout'])) {
+                if (in_array($siswaData['status'], ['naik_kelas', 'lulus', 'pindah', 'dropout'])) {
                     $statusBaru = $siswaData['status'];
                 }
 
@@ -228,7 +228,7 @@ class KenaikanKelasController extends Controller
                     RiwayatKelas::where('siswa_id', $siswa->id)
                         ->where('tahun_akademik_id', $tahunAkademikAktif->id)
                         ->where('status', 'aktif')
-                        ->update(['status' => 'selesai']);
+                        ->update(['status' => 'naik_kelas']);
 
                     // Buat riwayat baru dengan status lulus
                     RiwayatKelas::create([
@@ -248,7 +248,7 @@ class KenaikanKelasController extends Controller
                 RiwayatKelas::where('siswa_id', $siswa->id)
                     ->where('tahun_akademik_id', $tahunAkademikAktif->id)
                     ->where('status', 'aktif')
-                    ->update(['status' => 'selesai']);
+                    ->update(['status' => 'naik_kelas']);
 
                 // Buat riwayat baru
                 RiwayatKelas::create([

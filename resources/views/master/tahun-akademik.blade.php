@@ -228,8 +228,20 @@
                 $.get(`/admin/tahun-akademik/${id}`, function(data) {
                     $('#tahun_akademik_id').val(data.id);
                     $('#nama_tahun_akademik').val(data.nama_tahun_akademik);
-                    $('#tanggal_mulai').val(data.tanggal_mulai);
-                    $('#tanggal_selesai').val(data.tanggal_selesai);
+
+                    // Konversi format tanggal untuk input type="date"
+                    if (data.tanggal_mulai) {
+                        const tanggalMulai = new Date(data.tanggal_mulai);
+                        const formattedTanggalMulai = tanggalMulai.toISOString().split('T')[0];
+                        $('#tanggal_mulai').val(formattedTanggalMulai);
+                    }
+
+                    if (data.tanggal_selesai) {
+                        const tanggalSelesai = new Date(data.tanggal_selesai);
+                        const formattedTanggalSelesai = tanggalSelesai.toISOString().split('T')[0];
+                        $('#tanggal_selesai').val(formattedTanggalSelesai);
+                    }
+
                     $('#status_aktif').prop('checked', data.status_aktif);
                     $('#tahunAkademikModalLabel').text('Edit Tahun Akademik');
                 }).fail(function() {

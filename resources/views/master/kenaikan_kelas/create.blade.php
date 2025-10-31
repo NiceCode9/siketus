@@ -133,7 +133,7 @@
                                                                 <select name="siswa[{{ $index }}][status]"
                                                                     class="form-control form-control-sm status-siswa"
                                                                     required>
-                                                                    <option value="naik">Naik Kelas</option>
+                                                                    <option value="naik_kelas">Naik Kelas</option>
                                                                     <option value="tinggal">Tinggal Kelas</option>
                                                                     <option value="lulus">Lulus</option>
                                                                     <option value="pindah">Pindah Sekolah</option>

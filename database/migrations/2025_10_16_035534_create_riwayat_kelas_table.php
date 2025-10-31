@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('siswa_id')->constrained('siswa')->onDelete('cascade');
             $table->foreignId('kelas_id')->constrained('kelas')->onDelete('cascade');
             $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('cascade');
-            $table->enum('status', ['aktif', 'lulus', 'pindah', 'dropout'])->default('aktif');
+            $table->enum('status', ['aktif', 'naik_kelas', 'lulus', 'pindah', 'dropout'])->default('aktif');
             $table->text('keterangan')->nullable();
             $table->timestamps();
         });

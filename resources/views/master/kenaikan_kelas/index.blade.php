@@ -48,7 +48,7 @@
                                         <div class="info-box-content">
                                             <span class="info-box-text">Tahun Akademik Aktif</span>
                                             <span
-                                                class="info-box-number">{{ $tahunAkademikAktif->tahun_mulai }}/{{ $tahunAkademikAktif->tahun_selesai }}</span>
+                                                class="info-box-number">{{ $tahunAkademikAktif->nama_tahun_akademik }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -188,7 +188,7 @@
                                 @foreach ($tahunAkademikList as $ta)
                                     @if ($ta->id != $tahunAkademikAktif->id)
                                         <option value="{{ $ta->id }}">
-                                            {{ $ta->tahun_mulai }}/{{ $ta->tahun_selesai }}</option>
+                                            {{ $ta->nama_tahun_akademik }}</option>
                                     @endif
                                 @endforeach
                             </select>
