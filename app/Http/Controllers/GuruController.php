@@ -73,6 +73,11 @@ class GuruController extends Controller
 
             $akun->assignRole('guru');
 
+            // Berikan permission jika guru BK
+            if ($request->has('is_guru_bk') && $request->is_guru_bk == '1') {
+                $akun->givePermissionTo('penilaian-kedisiplinan');
+            }
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data guru berhasil disimpan!'
@@ -98,7 +103,16 @@ class GuruController extends Controller
      */
     public function edit(Guru $guru)
     {
-        return response()->json($guru);
+        $data = $guru->toArray();
+
+        // Cek apakah guru memiliki permission penilaian-kedisiplinan
+        if ($guru->akun && $guru->akun->hasPermissionTo('penilaian-kedisiplinan')) {
+            $data['is_guru_bk'] = true;
+        } else {
+            $data['is_guru_bk'] = false;
+        }
+
+        return response()->json($data);
     }
 
     /**
@@ -126,6 +140,15 @@ class GuruController extends Controller
                 'username' => $request->nip,
                 'email' => $request->email ?? null,
             ]);
+
+            // Update permission guru BK
+            if ($guru->akun) {
+                if ($request->has('is_guru_bk') && $request->is_guru_bk == '1') {
+                    $guru->akun->givePermissionTo('penilaian-kedisiplinan');
+                } else {
+                    $guru->akun->revokePermissionTo('penilaian-kedisiplinan');
+                }
+            }
 
             return response()->json([
                 'status' => true,

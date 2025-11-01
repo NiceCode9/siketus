@@ -67,6 +67,16 @@
                             <label for="biografi">Biografi</label>
                             <textarea class="form-control" id="biografi" name="biografi" rows="3"></textarea>
                         </div>
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="is_guru_bk" name="is_guru_bk"
+                                    value="1">
+                                <label class="custom-control-label" for="is_guru_bk">Centang jika guru BK</label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Guru BK akan mendapatkan akses untuk melakukan penilaian kedisiplinan siswa
+                            </small>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -152,6 +162,7 @@
             $('#add-guru-btn').click(function() {
                 $('#guru-form')[0].reset();
                 $('#guru_id').val('');
+                $('#is_guru_bk').prop('checked', false);
                 $('#guru-modal-label').text('Tambah Guru');
                 $('#guru-modal').modal('show');
                 clearValidationErrors();
@@ -170,6 +181,7 @@
                         $('#nama').val(response.nama);
                         $('#bidang_keahlian').val(response.bidang_keahlian);
                         $('#biografi').val(response.biografi);
+                        $('#is_guru_bk').prop('checked', response.is_guru_bk);
 
                         $('#guru-modal-label').text('Edit Guru');
                         $('#guru-modal').modal('show');
@@ -197,6 +209,11 @@
 
                 if (id) {
                     formData.append('_method', 'PUT');
+                }
+
+                // Pastikan checkbox terkirim dengan benar
+                if (!$('#is_guru_bk').is(':checked')) {
+                    formData.set('is_guru_bk', '0');
                 }
 
                 $.ajax({
@@ -319,8 +336,10 @@
             // Close modal and reset form
             $('#guru-modal').on('hidden.bs.modal', function() {
                 $('#guru-form')[0].reset();
+                $('#is_guru_bk').prop('checked', false);
                 clearValidationErrors();
             });
         });
     </script>
 @endpush
+</document_content>

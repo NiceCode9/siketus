@@ -47,10 +47,14 @@ class RekapAbsensiController extends Controller
                 DB::raw('COUNT(*) as total_pertemuan')
             )
                 ->join('siswa', 'absensi.siswa_id', '=', 'siswa.id')
+                ->join('riwayat_kelas', function ($join) use ($kelasId, $tahunAkademikId) {
+                    $join->on('siswa.id', '=', 'riwayat_kelas.siswa_id')
+                        ->where('riwayat_kelas.kelas_id', $kelasId)
+                        ->where('riwayat_kelas.tahun_akademik_id', $tahunAkademikId);
+                })
                 ->join('pertemuan', 'absensi.pertemuan_id', '=', 'pertemuan.id')
                 ->join('jadwal_pelajaran', 'pertemuan.jadwal_pelajaran_id', '=', 'jadwal_pelajaran.id')
                 ->join('guru_kelas', 'jadwal_pelajaran.guru_kelas_id', '=', 'guru_kelas.id')
-                ->where('siswa.current_class_id', $kelasId)
                 ->where('guru_kelas.tahun_akademik_id', $tahunAkademikId)
                 ->whereBetween('pertemuan.tanggal', [
                     $tahunAkademik->tanggal_mulai,

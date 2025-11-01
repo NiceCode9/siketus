@@ -52,6 +52,9 @@ class PenilaianController extends Controller
                     $jenisUjianList = $this->penilaianService->getJenisUjianList($selectedTahunAkademik);
                     $guruKelas = $this->penilaianService->getGuruKelas($guru->id, $selectedKelas, $selectedTahunAkademik, $selectedMapel);
                 } elseif ($selectedKategori === 'kedisiplinan') {
+                    if (!Auth::user()->can('penilaian-kedisiplinan')) {
+                        abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
+                    }
                     $kedisiplinanList = $this->penilaianService->getKedisiplinanList();
                 } elseif ($selectedKategori === 'keagamaan') {
                     $kegiatanKeagamaanList = $this->penilaianService->getKegiatanKeagamaanList($selectedTahunAkademik, $selectedSemester);

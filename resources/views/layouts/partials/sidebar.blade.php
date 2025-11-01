@@ -135,6 +135,15 @@
                     </p>
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a href="{{ route('admin.rekap.per-kelas') }}" class="nav-link">
+                    <i class="nav-icon fas fa-check-square"></i>
+                    <p>
+                        Rekapitulasi Absensi Siswa
+                    </p>
+                </a>
+            </li>
         @endif
 
 

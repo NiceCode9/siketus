@@ -25,4 +25,8 @@ Route::middleware('auth')->prefix('siswa')->name('siswa.')->group(function () {
         ->name('riwayat-penilaian.siswa.index');
     Route::get('/riwayat-penilaian/siswa/mapel/{mapel}/detail', [\App\Http\Controllers\RiwayatPenilaianController::class, 'siswaDetailMapel'])
         ->name('riwayat-penilaian.siswa.detail-mapel');
+
+    // Route PDF - TAMBAHAN BARU
+    Route::get('/riwayat-penilaian/print-pdf/laporan-mapel', [\App\Http\Controllers\RiwayatPenilaianController::class, 'siswaPrintPdfLaporanMapel'])
+        ->name('riwayat-penilaian.siswa.print-pdf');
 });

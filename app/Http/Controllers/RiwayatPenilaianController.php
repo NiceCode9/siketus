@@ -8,6 +8,7 @@ use App\Models\Siswa;
 use App\Models\PenilaianKedisiplinan;
 use App\Models\PenilaianKeagamaan;
 use App\Models\PenilaianMapel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -293,5 +294,47 @@ class RiwayatPenilaianController extends Controller
                 $nilaiKeagamaan->avg('nilai')
             ])->filter()->avg() ?? 0,
         ];
+    }
+
+    /**
+     * Generate PDF Riwayat Penilaian Siswa
+     */
+    public function siswaPrintPdfLaporanMapel(Request $request)
+    {
+        $siswa = Auth::user()->siswa;
+        $tahunAkademikId = $request->tahun_akademik_id;
+        $semester = $request->semester;
+
+        $tahunAkademik = TahunAkademik::findOrFail($tahunAkademikId);
+
+        // Ambil semua nilai
+        $nilaiMapel = PenilaianMapel::with(['jenisUjian', 'guruKelas.guruMapel.mapel'])
+            ->where('siswa_id', $siswa->id)
+            ->where('tahun_akademik_id', $tahunAkademikId)
+            ->where('semester', $semester)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Group nilai mapel berdasarkan mapel dan jenis ujian
+        $groupedNilaiMapel = $nilaiMapel->groupBy(function ($item) {
+            return $item->guruKelas->guruMapel->mapel->nama_mapel;
+        })->map(function ($items) {
+            return $items->groupBy(function ($item) {
+                return $item->jenisUjian->nama_jenis_ujian;
+            });
+        });
+
+        $pdf = PDF::loadView('pdf.laporan-mapel', compact(
+            'siswa',
+            'tahunAkademik',
+            'semester',
+            'groupedNilaiMapel'
+        ));
+
+        $pdf->setPaper('A4', 'landscape');
+
+        $filename = 'Riwayat_Nilai_' . $siswa->nama . '_' . $semester . '.pdf';
+
+        return $pdf->stream($filename);
     }
 }
