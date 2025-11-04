@@ -36,7 +36,10 @@ class PenilaianSiswaController extends Controller
         // Ambil data nilai yang sudah diinput (guru dan siswa)
         $nilaiData = $this->penilaianService->getNilaiDataForSiswa($user->siswa->id, $guruKelas->pluck('id')->toArray());
 
-        return view('siswa.penilaian.index', compact('guruKelas', 'jenisUjians', 'nilaiData'));
+        // Ambil data nilai yang berlebih untuk warning
+        $nilaiBerlebih = $this->penilaianService->getNilaiSiswaBerlebih($user->siswa->id, $guruKelas->pluck('id')->toArray());
+
+        return view('siswa.penilaian.index', compact('guruKelas', 'jenisUjians', 'nilaiData', 'nilaiBerlebih'));
     }
 
     public function store(Request $request)
@@ -45,18 +48,45 @@ class PenilaianSiswaController extends Controller
         $tahunAkademik = TahunAkademik::aktif()->first();
 
         // Validasi input
-        $validated = $request->validate([
+        $request->validate([
             'guru_kelas_id' => 'required|array',
             'guru_kelas_id.*' => 'exists:guru_kelas,id',
             'nilai' => 'required|array',
             'nilai.*.*' => 'nullable|numeric|min:0|max:100',
+            'semester' => 'required|array',
+            'semester.*.*' => 'required|in:ganjil,genap',
         ]);
 
         try {
+            // Filter hanya nilai yang terisi beserta semesternya
+            $nilaiFiltered = [];
+            $semesterFiltered = [];
+
+            foreach ($request->nilai as $guruKelasId => $jenisUjianNilai) {
+                foreach ($jenisUjianNilai as $jenisUjianId => $nilai) {
+                    if ($nilai !== null && $nilai !== '' && is_numeric($nilai)) {
+                        $nilaiFiltered[$guruKelasId][$jenisUjianId] = $nilai;
+
+                        // Ambil semester dari input hidden
+                        if (isset($request->semester[$guruKelasId][$jenisUjianId])) {
+                            $semesterFiltered[$guruKelasId][$jenisUjianId] = $request->semester[$guruKelasId][$jenisUjianId];
+                        }
+                    }
+                }
+            }
+
+            // Cek apakah ada nilai yang diinput
+            if (empty($nilaiFiltered)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Harap isi minimal satu nilai sebelum menyimpan!'
+                ], 422);
+            }
+
             // Validasi nilai terhadap nilai guru
             $validationResult = $this->penilaianService->validateNilaiSiswaAgainstGuru(
                 $user->siswa->id,
-                $request->nilai
+                $nilaiFiltered
             );
 
             if (!$validationResult['valid']) {
@@ -67,13 +97,13 @@ class PenilaianSiswaController extends Controller
                 ], 422);
             }
 
-            // Simpan nilai
+            // Simpan nilai yang terisi saja dengan semester masing-masing
             $this->penilaianService->storeNilaiMapelBySiswa([
                 'siswa_id' => $user->siswa->id,
                 'tahun_akademik_id' => $tahunAkademik->id,
                 'kelas_id' => $user->siswa->current_class_id,
-                'semester' => $tahunAkademik->semester_aktif,
-                'nilai' => $request->nilai,
+                'nilai' => $nilaiFiltered,
+                'semester' => $semesterFiltered,
             ]);
 
             return response()->json([

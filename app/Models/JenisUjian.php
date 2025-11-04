@@ -12,6 +12,7 @@ class JenisUjian extends Model
         'tahun_akademik_id',
         'nama_jenis_ujian',
         'deskripsi',
+        'semester',
     ];
 
     public function tahunAkademik()

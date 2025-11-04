@@ -11,6 +11,15 @@
                 <strong>Perhatian:</strong> Nilai yang Anda input tidak boleh melebihi nilai yang telah diinput oleh guru.
             </div>
 
+            @if (!empty($nilaiBerlebih))
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Peringatan:</strong> Terdapat
+                    {{ count($nilaiBerlebih, COUNT_RECURSIVE) - count($nilaiBerlebih) }} nilai yang melebihi nilai guru.
+                    Silakan koreksi nilai tersebut.
+                </div>
+            @endif
+
             <form id="formNilai" action="{{ route('siswa.penilaian.store') }}" method="POST">
                 @csrf
                 <table class="table table-bordered" style="width: 100%;">
@@ -34,20 +43,40 @@
                                 @endphp
                                 @foreach ($jenisUjians as $jenis)
                                     @php
-                                        $nilai = $nilaiData[$gk->id][$jenis->id] ?? '';
+                                        $nilaiInfo = $nilaiData[$gk->id][$jenis->id] ?? [
+                                            'nilai_siswa' => '',
+                                            'nilai_guru' => 0,
+                                            'is_overflow' => false,
+                                        ];
+                                        $nilai = $nilaiInfo['nilai_siswa'];
+                                        $nilaiGuru = $nilaiInfo['nilai_guru'];
+                                        $isOverflow = $nilaiInfo['is_overflow'];
+
                                         if ($nilai !== '' && $nilai !== null) {
                                             $totalNilai += $nilai;
                                             $countNilai++;
                                         }
                                     @endphp
                                     <td>
+                                        <input type="hidden" name="semester[{{ $gk->id }}][{{ $jenis->id }}]"
+                                            value="{{ $jenis->semester }}">
                                         <input type="number" name="nilai[{{ $gk->id }}][{{ $jenis->id }}]"
-                                            class="form-control form-control-sm text-center nilai-input"
+                                            class="form-control form-control-sm text-center nilai-input {{ $isOverflow ? 'is-invalid' : '' }}"
                                             value="{{ $nilai }}" min="0" max="100" step="0.01"
                                             placeholder="0-100" data-row="{{ $gk->id }}"
-                                            data-guru-kelas="{{ $gk->id }}" data-jenis-ujian="{{ $jenis->id }}">
-                                        <small class="error-message text-danger d-none"
-                                            data-error="{{ $gk->id }}-{{ $jenis->id }}"></small>
+                                            data-guru-kelas="{{ $gk->id }}" data-jenis-ujian="{{ $jenis->id }}"
+                                            data-nilai-guru="{{ $nilaiGuru }}">
+
+                                        @if ($isOverflow)
+                                            <small class="error-message text-danger overflow-warning"
+                                                data-error="{{ $gk->id }}-{{ $jenis->id }}">
+                                                <i class="fas fa-exclamation-circle"></i> Nilai melebihi nilai guru
+                                                ({{ $nilaiGuru }})
+                                            </small>
+                                        @else
+                                            <small class="error-message text-danger d-none"
+                                                data-error="{{ $gk->id }}-{{ $jenis->id }}"></small>
+                                        @endif
                                     </td>
                                 @endforeach
                                 <td class="text-center align-middle">
@@ -81,12 +110,38 @@
             font-size: 0.875rem;
             margin-top: 0.25rem;
         }
+
+        .overflow-warning {
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
     </style>
 @endpush
 
 @push('scripts')
     <script>
         $(document).ready(function() {
+            // Simpan nilai awal untuk tracking perubahan
+            var originalValues = {};
+            $('.nilai-input').each(function() {
+                var guruKelasId = $(this).data('guru-kelas');
+                var jenisUjianId = $(this).data('jenis-ujian');
+                var key = guruKelasId + '-' + jenisUjianId;
+                originalValues[key] = $(this).val();
+            });
+
             // Fungsi debounce untuk menunda eksekusi sampai user berhenti mengetik
             function debounce(func, delay) {
                 let timer;
@@ -96,6 +151,7 @@
                 };
             }
 
+            // Validasi real-time dengan debounce
             $('.nilai-input').on('input', debounce(function() {
                 var input = $(this);
                 var guruKelasId = input.data('guru-kelas');
@@ -103,10 +159,10 @@
                 var nilaiSiswa = parseFloat(input.val());
                 var errorMsg = $(`small[data-error="${guruKelasId}-${jenisUjianId}"]`);
 
-                // Jika input kosong atau bukan angka valid
-                if (isNaN(nilaiSiswa)) {
+                // Jika input kosong atau bukan angka valid, hapus error
+                if (input.val() === '' || isNaN(nilaiSiswa)) {
                     input.removeClass('is-invalid');
-                    errorMsg.addClass('d-none').text('');
+                    errorMsg.addClass('d-none').removeClass('overflow-warning').text('');
                     return;
                 }
 
@@ -128,17 +184,26 @@
                         if (response.success && response.nilai !== null) {
                             var nilaiGuru = parseFloat(response.nilai);
 
+                            // Update data-nilai-guru
+                            input.attr('data-nilai-guru', nilaiGuru);
+
                             if (nilaiSiswa > nilaiGuru) {
                                 input.addClass('is-invalid');
                                 errorMsg.removeClass('d-none')
-                                    .text(`Nilai tidak boleh melebihi ${nilaiGuru}`);
+                                    .addClass('overflow-warning')
+                                    .html(
+                                        `<i class="fas fa-exclamation-circle"></i> Nilai melebihi nilai guru (${nilaiGuru})`
+                                        );
                             } else {
                                 input.removeClass('is-invalid');
-                                errorMsg.addClass('d-none').text('');
+                                errorMsg.addClass('d-none').removeClass('overflow-warning')
+                                    .text('');
                             }
                         } else {
+                            // Jika guru belum input nilai, boleh input bebas
                             input.removeClass('is-invalid');
-                            errorMsg.addClass('d-none').text('');
+                            errorMsg.addClass('d-none').removeClass('overflow-warning')
+                                .text('');
                         }
                     },
                     error: function() {
@@ -146,51 +211,6 @@
                     }
                 });
             }, 400)); // 400ms delay debounce
-
-            // // Validasi real-time saat input
-            // $('.nilai-input').on('keyup', function() {
-            //     var input = $(this);
-            //     var guruKelasId = input.data('guru-kelas');
-            //     var jenisUjianId = input.data('jenis-ujian');
-            //     var nilaiSiswa = parseFloat(input.val());
-            //     var errorMsg = $(`small[data-error="${guruKelasId}-${jenisUjianId}"]`);
-
-            //     if (!nilaiSiswa || nilaiSiswa === '') {
-            //         input.removeClass('is-invalid');
-            //         errorMsg.addClass('d-none').text('');
-            //         return;
-            //     }
-
-            //     // Ajax request untuk validasi
-            //     $.ajax({
-            //         url: '{{ route('siswa.penilaian.get-nilai-guru') }}',
-            //         method: 'GET',
-            //         data: {
-            //             guru_kelas_id: guruKelasId,
-            //             jenis_ujian_id: jenisUjianId
-            //         },
-            //         success: function(response) {
-            //             if (response.success && response.nilai !== null) {
-            //                 var nilaiGuru = parseFloat(response.nilai);
-
-            //                 if (nilaiSiswa > nilaiGuru) {
-            //                     input.addClass('is-invalid');
-            //                     errorMsg.removeClass('d-none')
-            //                         .text(`Nilai tidak boleh melebihi ${nilaiGuru}`);
-            //                 } else {
-            //                     input.removeClass('is-invalid');
-            //                     errorMsg.addClass('d-none').text('');
-            //                 }
-            //             } else {
-            //                 input.removeClass('is-invalid');
-            //                 errorMsg.addClass('d-none').text('');
-            //             }
-            //         },
-            //         error: function() {
-            //             console.error('Gagal memvalidasi nilai');
-            //         }
-            //     });
-            // });
 
             // Hitung rata-rata
             $('.nilai-input').on('input', function() {
@@ -200,7 +220,7 @@
 
                 $(`input[data-row="${row}"]`).each(function() {
                     var val = parseFloat($(this).val());
-                    if (!isNaN(val) && val !== '') {
+                    if (!isNaN(val) && $(this).val() !== '') {
                         total += val;
                         count++;
                     }
@@ -224,20 +244,27 @@
                     return false;
                 }
 
-                // Cek apakah ada nilai yang diisi
-                var hasValue = false;
-                $('input[type="number"]').each(function() {
-                    if ($(this).val() !== '') {
-                        hasValue = true;
-                        return false;
+                // Cek apakah ada nilai yang BERUBAH atau BARU diisi
+                var hasChanges = false;
+                $('.nilai-input').each(function() {
+                    var guruKelasId = $(this).data('guru-kelas');
+                    var jenisUjianId = $(this).data('jenis-ujian');
+                    var key = guruKelasId + '-' + jenisUjianId;
+                    var currentVal = $(this).val();
+                    var originalVal = originalValues[key] || '';
+
+                    // Cek jika ada perubahan atau nilai baru
+                    if (currentVal !== '' && currentVal !== originalVal) {
+                        hasChanges = true;
+                        return false; // break loop
                     }
                 });
 
-                if (!hasValue) {
+                if (!hasChanges) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Perhatian',
-                        text: 'Harap isi minimal satu nilai sebelum menyimpan!',
+                        text: 'Tidak ada perubahan nilai yang perlu disimpan!',
                     });
                     return false;
                 }
@@ -258,15 +285,59 @@
             });
 
             function submitForm() {
-                var formData = $('#formNilai').serialize();
-                var btnSimpan = $('#btnSimpan');
+                // Buat FormData baru hanya dengan nilai yang berubah atau baru diisi
+                var formData = new FormData();
+                formData.append('_token', $('input[name="_token"]').val());
 
+                var guruKelasIds = [];
+                var hasData = false;
+
+                $('.nilai-input').each(function() {
+                    var guruKelasId = $(this).data('guru-kelas');
+                    var jenisUjianId = $(this).data('jenis-ujian');
+                    var key = guruKelasId + '-' + jenisUjianId;
+                    var currentVal = $(this).val();
+                    var originalVal = originalValues[key] || '';
+
+                    // Hanya kirim yang berubah atau baru diisi
+                    if (currentVal !== '' && currentVal !== originalVal) {
+                        if (!guruKelasIds.includes(guruKelasId)) {
+                            guruKelasIds.push(guruKelasId);
+                        }
+
+                        formData.append(`nilai[${guruKelasId}][${jenisUjianId}]`, currentVal);
+
+                        // Ambil semester dari hidden input
+                        var semester = $(`input[name="semester[${guruKelasId}][${jenisUjianId}]"]`).val();
+                        formData.append(`semester[${guruKelasId}][${jenisUjianId}]`, semester);
+
+                        hasData = true;
+                    }
+                });
+
+                // Tambahkan guru_kelas_id
+                guruKelasIds.forEach(function(id) {
+                    formData.append('guru_kelas_id[]', id);
+                });
+
+                if (!hasData) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Perhatian',
+                        text: 'Tidak ada data yang perlu disimpan!',
+                    });
+                    return;
+                }
+
+                var btnSimpan = $('#btnSimpan');
                 btnSimpan.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...');
 
                 $.ajax({
                     url: '{{ route('siswa.penilaian.store') }}',
                     method: 'POST',
                     data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function(response) {
                         if (response.success) {
                             Swal.fire({
@@ -283,36 +354,46 @@
                             '<i class="fas fa-save"></i> Simpan Nilai');
 
                         if (xhr.status === 422) {
-                            var errors = xhr.responseJSON.errors;
-                            var errorMessages = [];
+                            var response = xhr.responseJSON;
 
-                            // Tampilkan error pada field yang bermasalah
-                            $.each(errors, function(guruKelasId, jenisUjianErrors) {
-                                $.each(jenisUjianErrors, function(jenisUjianId, error) {
-                                    var input = $(
-                                        `input[data-guru-kelas="${guruKelasId}"][data-jenis-ujian="${jenisUjianId}"]`
-                                    );
-                                    var errorMsg = $(
-                                        `small[data-error="${guruKelasId}-${jenisUjianId}"]`
-                                    );
+                            if (response.errors) {
+                                var errorMessages = [];
 
-                                    input.addClass('is-invalid');
-                                    errorMsg.removeClass('d-none').text(error.message);
-                                    errorMessages.push(error.message);
+                                // Tampilkan error pada field yang bermasalah
+                                $.each(response.errors, function(guruKelasId, jenisUjianErrors) {
+                                    $.each(jenisUjianErrors, function(jenisUjianId, error) {
+                                        var input = $(
+                                            `input[data-guru-kelas="${guruKelasId}"][data-jenis-ujian="${jenisUjianId}"]`
+                                        );
+                                        var errorMsg = $(
+                                            `small[data-error="${guruKelasId}-${jenisUjianId}"]`
+                                        );
+
+                                        input.addClass('is-invalid');
+                                        errorMsg.removeClass('d-none').addClass(
+                                            'overflow-warning').text(error.message);
+                                        errorMessages.push(error.message);
+                                    });
                                 });
-                            });
 
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Validasi Gagal',
-                                html: xhr.responseJSON.message + '<br><small>' + errorMessages
-                                    .join('<br>') + '</small>',
-                            });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Validasi Gagal',
+                                    html: response.message + '<br><small>' + errorMessages
+                                        .join('<br>') + '</small>',
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Validasi Gagal',
+                                    text: response.message || 'Harap isi minimal satu nilai!',
+                                });
+                            }
                         } else {
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
-                                text: xhr.responseJSON.message ||
+                                text: xhr.responseJSON?.message ||
                                     'Terjadi kesalahan saat menyimpan nilai',
                             });
                         }

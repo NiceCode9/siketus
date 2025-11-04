@@ -275,9 +275,39 @@ class PenilaianService
         return $data;
     }
 
+    /**
+     * Get nilai siswa yang melebihi nilai guru
+     * Untuk ditampilkan sebagai warning di halaman siswa
+     */
+    public function getNilaiSiswaBerlebih($siswaId, $guruKelasIds)
+    {
+        $nilaiBerlebih = [];
 
+        foreach ($guruKelasIds as $guruKelasId) {
+            $penilaianList = PenilaianMapel::where('guru_kelas_id', $guruKelasId)
+                ->where('siswa_id', $siswaId)
+                ->whereNotNull('nilai_by_siswa')
+                ->where('nilai', '>', 0) // Hanya jika guru sudah input
+                ->get();
 
-    // Proses untuk controller siswa
+            foreach ($penilaianList as $penilaian) {
+                // Cek jika nilai siswa > nilai guru (dan guru sudah input)
+                if ($penilaian->nilai > 0 && $penilaian->nilai_by_siswa > $penilaian->nilai) {
+                    $nilaiBerlebih[$guruKelasId][$penilaian->jenis_ujian_id] = [
+                        'nilai_siswa' => $penilaian->nilai_by_siswa,
+                        'nilai_guru' => $penilaian->nilai,
+                        'selisih' => $penilaian->nilai_by_siswa - $penilaian->nilai,
+                    ];
+                }
+            }
+        }
+
+        return $nilaiBerlebih;
+    }
+
+    /**
+     * Update method getNilaiDataForSiswa untuk include info berlebih
+     */
     public function getNilaiDataForSiswa($siswaId, $guruKelasIds)
     {
         $nilaiData = [];
@@ -288,7 +318,22 @@ class PenilaianService
                 ->get();
 
             foreach ($nilaiMapel as $nilai) {
-                $nilaiData[$guruKelasId][$nilai->jenis_ujian_id] = $nilai->nilai_by_siswa ?? '';
+                // Overflow hanya jika:
+                // 1. Nilai siswa ada (tidak null/kosong)
+                // 2. Nilai guru ada DAN > 0 (guru sudah input)
+                // 3. Nilai siswa > nilai guru
+                $isOverflow = (
+                    $nilai->nilai_by_siswa !== null &&
+                    $nilai->nilai_by_siswa !== '' &&
+                    $nilai->nilai > 0 && // Guru sudah input
+                    $nilai->nilai_by_siswa > $nilai->nilai
+                );
+
+                $nilaiData[$guruKelasId][$nilai->jenis_ujian_id] = [
+                    'nilai_siswa' => $nilai->nilai_by_siswa ?? '',
+                    'nilai_guru' => $nilai->nilai ?? 0,
+                    'is_overflow' => $isOverflow,
+                ];
             }
         }
 
@@ -348,20 +393,47 @@ class PenilaianService
         try {
             foreach ($data['nilai'] as $guruKelasId => $jenisUjianNilai) {
                 foreach ($jenisUjianNilai as $jenisUjianId => $nilai) {
-                    if ($nilai !== null && $nilai !== '') {
-                        PenilaianMapel::updateOrCreate(
-                            [
-                                'siswa_id' => $data['siswa_id'],
-                                'guru_kelas_id' => $guruKelasId,
-                                'jenis_ujian_id' => $jenisUjianId,
-                                'semester' => $data['semester'],
-                            ],
-                            [
-                                'tahun_akademik_id' => $data['tahun_akademik_id'],
-                                'kelas_id' => $data['kelas_id'],
-                                'nilai_by_siswa' => $nilai,
-                            ]
-                        );
+                    // Skip jika nilai kosong, null, atau bukan angka
+                    if ($nilai === null || $nilai === '' || !is_numeric($nilai)) {
+                        continue;
+                    }
+
+                    // Pastikan nilai adalah angka yang valid
+                    $nilaiFloat = floatval($nilai);
+
+                    // Ambil semester dari data yang sudah difilter
+                    $semester = $data['semester'][$guruKelasId][$jenisUjianId] ?? null;
+
+                    // Skip jika semester tidak ada
+                    if (!$semester) {
+                        continue;
+                    }
+
+                    // Cek apakah record sudah ada
+                    $existingRecord = PenilaianMapel::where([
+                        'siswa_id' => $data['siswa_id'],
+                        'guru_kelas_id' => $guruKelasId,
+                        'jenis_ujian_id' => $jenisUjianId,
+                        'semester' => $semester,
+                    ])->first();
+
+                    if ($existingRecord) {
+                        // Update hanya nilai_by_siswa jika record sudah ada
+                        $existingRecord->update([
+                            'nilai_by_siswa' => $nilaiFloat,
+                        ]);
+                    } else {
+                        // Insert record baru dengan nilai default 0 untuk field 'nilai'
+                        PenilaianMapel::create([
+                            'siswa_id' => $data['siswa_id'],
+                            'guru_kelas_id' => $guruKelasId,
+                            'jenis_ujian_id' => $jenisUjianId,
+                            'semester' => $semester,
+                            'tahun_akademik_id' => $data['tahun_akademik_id'],
+                            'kelas_id' => $data['kelas_id'],
+                            'nilai' => 0, // Default 0 karena guru belum input
+                            'nilai_by_siswa' => $nilaiFloat,
+                        ]);
                     }
                 }
             }
