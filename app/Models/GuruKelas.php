@@ -40,6 +40,16 @@ class GuruKelas extends Model
         return $this->hasMany(JadwalPelajaran::class, 'guru_kelas_id');
     }
 
+    public function kkmMapel()
+    {
+        return $this->hasMany(KkmMapel::class, 'guru_kelas_id');
+    }
+
+    public function remidiSiswa()
+    {
+        return $this->hasMany(RemidiSiswa::class, 'guru_kelas_id');
+    }
+
     /**
      * Scope untuk filter aktif
      */

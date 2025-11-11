@@ -21,6 +21,25 @@ Route::middleware('auth')->prefix('guru')->name('guru.')->group(function () {
         Route::get('/history/{jadwal_id}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'history'])->name('history');
     });
 
+    // KKM Management
+    Route::prefix('kkm')->name('kkm.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Guru\KkmController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\Guru\KkmController::class, 'create'])->name('create');
+        Route::post('/store', [App\Http\Controllers\Guru\KkmController::class, 'store'])->name('store');
+        Route::get('/show/{id}', [App\Http\Controllers\Guru\KkmController::class, 'show'])->name('show');
+        Route::delete('/destroy/{id}', [App\Http\Controllers\Guru\KkmController::class, 'destroy'])->name('destroy');
+        Route::get('/get-kkm-value', [App\Http\Controllers\Guru\KkmController::class, 'getKkmValue'])->name('get-kkm-value');
+    });
+
+    // Remidi Management
+    Route::prefix('remidi')->name('remidi.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Guru\RemidiController::class, 'index'])->name('index');
+        Route::get('/show/{id}', [App\Http\Controllers\Guru\RemidiController::class, 'show'])->name('show');
+        Route::post('/input-nilai/{id}', [App\Http\Controllers\Guru\RemidiController::class, 'inputNilai'])->name('input-nilai');
+        Route::post('/bulk-input-nilai', [App\Http\Controllers\Guru\RemidiController::class, 'bulkInputNilai'])->name('bulk-input-nilai');
+        Route::get('/statistik', [App\Http\Controllers\Guru\RemidiController::class, 'statistik'])->name('statistik');
+    });
+
     // Routes Penilaian
     Route::get('/penilaian', [\App\Http\Controllers\Guru\PenilaianController::class, 'index'])->name('penilaian.index');
     Route::get('/penilaian/create', [\App\Http\Controllers\Guru\PenilaianController::class, 'create'])->name('penilaian.create');

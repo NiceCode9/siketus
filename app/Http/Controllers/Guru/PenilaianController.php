@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TahunAkademik;
 use App\Models\Kelas;
 use App\Models\Siswa;
+use App\Services\KkmService;
 use App\Services\PenilaianService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,10 +14,12 @@ use Illuminate\Support\Facades\Auth;
 class PenilaianController extends Controller
 {
     protected $penilaianService;
+    protected $kkmService;
 
-    public function __construct(PenilaianService $penilaianService)
+    public function __construct(PenilaianService $penilaianService, KkmService $kkmService)
     {
         $this->penilaianService = $penilaianService;
+        $this->kkmService = $kkmService;
     }
 
     public function index(Request $request)
@@ -38,6 +41,7 @@ class PenilaianController extends Controller
         $kedisiplinanList = [];
         $kegiatanKeagamaanList = [];
         $guruKelas = null;
+        $kkmData = collect(); // ADD: KKM data
 
         if ($selectedTahunAkademik) {
             // Get kelas yang diampu guru
@@ -51,6 +55,11 @@ class PenilaianController extends Controller
                 if ($selectedKategori === 'mapel') {
                     $jenisUjianList = $this->penilaianService->getJenisUjianList($selectedTahunAkademik);
                     $guruKelas = $this->penilaianService->getGuruKelas($guru->id, $selectedKelas, $selectedTahunAkademik, $selectedMapel);
+
+                    // ADD: Get KKM data
+                    if ($guruKelas) {
+                        $kkmData = $this->kkmService->getKkmByGuruKelas($guruKelas->id, $selectedTahunAkademik);
+                    }
                 } elseif ($selectedKategori === 'kedisiplinan') {
                     if (!Auth::user()->can('penilaian-kedisiplinan')) {
                         abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
@@ -74,7 +83,8 @@ class PenilaianController extends Controller
             'kedisiplinanList',
             'kegiatanKeagamaanList',
             'guruKelas',
-            'selectedMapel'
+            'selectedMapel',
+            'kkmData' // ADD: Pass KKM data to view
         ));
     }
 
@@ -87,7 +97,7 @@ class PenilaianController extends Controller
         $kategori = $request->kategori;
         $guru = Auth::user()->guru;
 
-        // Get form data dari service
+        // Get form data dari service (already includes KKM data)
         $formData = $this->penilaianService->getFormData(
             $siswa->id,
             $tahunAkademik->id,
@@ -128,7 +138,7 @@ class PenilaianController extends Controller
                 'mapel_id' => $request->mapel_id,
             ]);
 
-            // Call service untuk store penilaian
+            // Call service untuk store penilaian (with KKM check & auto remidi)
             $this->penilaianService->storePenilaian($data);
 
             $redirectParams = [

@@ -16,6 +16,15 @@ use Illuminate\Support\Facades\DB;
 
 class PenilaianService
 {
+    protected $kkmService;
+    protected $remidiService;
+
+    public function __construct(KkmService $kkmService, RemidiService $remidiService)
+    {
+        $this->kkmService = $kkmService;
+        $this->remidiService = $remidiService;
+    }
+
     /**
      * Get list of classes taught by a teacher
      */
@@ -30,6 +39,20 @@ class PenilaianService
             ->get();
 
         return $guruKelas->pluck('kelas')->unique('id');
+    }
+
+    public function getMapelListByGuru($guruId, $tahunAkademikId)
+    {
+        return GuruKelas::with('guruMapel.mapel')
+            ->whereHas('guruMapel', function ($q) use ($guruId) {
+                $q->where('guru_id', $guruId);
+            })
+            ->where('tahun_akademik_id', $tahunAkademikId)
+            ->where('aktif', true)
+            ->get()
+            ->pluck('guruMapel.mapel')
+            ->flatten()
+            ->unique('id');
     }
 
     /**
@@ -89,7 +112,7 @@ class PenilaianService
      */
     public function getExistingNilaiMapel($siswaId, $guruKelasId, $semester = 'genap')
     {
-        return PenilaianMapel::where('siswa_id', $siswaId)
+        return PenilaianMapel::with('remidiSiswa')->where('siswa_id', $siswaId)
             ->where('guru_kelas_id', $guruKelasId)
             // ->where('semester', $semester)
             ->get()
@@ -121,7 +144,8 @@ class PenilaianService
     }
 
     /**
-     * Store nilai mapel
+     * Store nilai mapel WITH KKM check and auto remidi
+     * UPDATE method yang sudah ada
      */
     public function storeNilaiMapel(array $data)
     {
@@ -140,7 +164,21 @@ class PenilaianService
         try {
             foreach ($data['nilai'] as $jenisUjianId => $nilai) {
                 if ($nilai !== null && $nilai !== '') {
-                    PenilaianMapel::updateOrCreate(
+                    // Get KKM untuk jenis ujian ini
+                    $kkm = $this->kkmService->getKkmValue(
+                        $guruKelas->id,
+                        $jenisUjianId,
+                        $data['tahun_akademik_id']
+                    );
+
+                    // Tentukan status ketuntasan
+                    $statusKetuntasan = null;
+                    if ($kkm !== null) {
+                        $statusKetuntasan = $this->kkmService->checkKetuntasan($nilai, $kkm);
+                    }
+
+                    // Update or create penilaian
+                    $penilaian = PenilaianMapel::updateOrCreate(
                         [
                             'siswa_id' => $data['siswa_id'],
                             'guru_kelas_id' => $guruKelas->id,
@@ -151,9 +189,29 @@ class PenilaianService
                             'tahun_akademik_id' => $data['tahun_akademik_id'],
                             'kelas_id' => $data['kelas_id'],
                             'nilai' => $nilai,
+                            'status_ketuntasan' => $statusKetuntasan,
+                            'kkm_saat_itu' => $kkm,
                             'catatan' => $data['catatan'][$jenisUjianId] ?? null,
                         ]
                     );
+
+                    // Handle remidi logic
+                    if ($statusKetuntasan === 'remidi') {
+                        // Create/Update remidi record
+                        $this->remidiService->updateOrCreateRemidi($penilaian->id, [
+                            'siswa_id' => $data['siswa_id'],
+                            'guru_kelas_id' => $guruKelas->id,
+                            'jenis_ujian_id' => $jenisUjianId,
+                            'tahun_akademik_id' => $data['tahun_akademik_id'],
+                            'kelas_id' => $data['kelas_id'],
+                            'semester' => $data['semester'],
+                            'nilai_asli' => $nilai,
+                            'kkm' => $kkm,
+                        ]);
+                    } elseif ($statusKetuntasan === 'tuntas') {
+                        // Cancel remidi if exists (nilai updated and now tuntas)
+                        $this->remidiService->cancelRemidi($penilaian->id);
+                    }
                 }
             }
 
@@ -161,7 +219,6 @@ class PenilaianService
             return true;
         } catch (\Exception $e) {
             DB::rollBack();
-            dd($e->getMessage());
             throw $e;
         }
     }
@@ -264,6 +321,9 @@ class PenilaianService
             $data['guruKelas'] = $guruKelas;
             $data['jenisUjianList'] = $this->getJenisUjianList($tahunAkademikId);
             $data['existingNilai'] = $this->getExistingNilaiMapel($siswaId, $guruKelas->id, $semester);
+
+            // ADD: KKM data
+            $data['kkmData'] = $this->kkmService->getKkmByGuruKelas($guruKelas->id, $tahunAkademikId);
         } elseif ($kategori === 'kedisiplinan') {
             $data['kedisiplinanList'] = $this->getKedisiplinanList();
             $data['existingNilai'] = $this->getExistingNilaiKedisiplinan($siswaId, $tahunAkademikId, $semester);
@@ -306,26 +366,24 @@ class PenilaianService
     }
 
     /**
-     * Update method getNilaiDataForSiswa untuk include info berlebih
+     * Get nilai data for siswa WITH ketuntasan info
+     * UPDATE method yang sudah ada untuk include ketuntasan
      */
-    public function getNilaiDataForSiswa($siswaId, $guruKelasIds)
+    public function getNilaiDataForSiswaWithKetuntasan($siswaId, $guruKelasIds)
     {
         $nilaiData = [];
 
         foreach ($guruKelasIds as $guruKelasId) {
-            $nilaiMapel = PenilaianMapel::where('guru_kelas_id', $guruKelasId)
+            $nilaiMapel = PenilaianMapel::with('remidiSiswa')
+                ->where('guru_kelas_id', $guruKelasId)
                 ->where('siswa_id', $siswaId)
                 ->get();
 
             foreach ($nilaiMapel as $nilai) {
-                // Overflow hanya jika:
-                // 1. Nilai siswa ada (tidak null/kosong)
-                // 2. Nilai guru ada DAN > 0 (guru sudah input)
-                // 3. Nilai siswa > nilai guru
                 $isOverflow = (
                     $nilai->nilai_by_siswa !== null &&
                     $nilai->nilai_by_siswa !== '' &&
-                    $nilai->nilai > 0 && // Guru sudah input
+                    $nilai->nilai > 0 &&
                     $nilai->nilai_by_siswa > $nilai->nilai
                 );
 
@@ -333,6 +391,10 @@ class PenilaianService
                     'nilai_siswa' => $nilai->nilai_by_siswa ?? '',
                     'nilai_guru' => $nilai->nilai ?? 0,
                     'is_overflow' => $isOverflow,
+                    'status_ketuntasan' => $nilai->status_ketuntasan,
+                    'kkm' => $nilai->kkm_saat_itu,
+                    'has_remidi' => $nilai->remidiSiswa !== null,
+                    'remidi_status' => $nilai->remidiSiswa?->status_remidi,
                 ];
             }
         }
@@ -431,7 +493,6 @@ class PenilaianService
                             'semester' => $semester,
                             'tahun_akademik_id' => $data['tahun_akademik_id'],
                             'kelas_id' => $data['kelas_id'],
-                            'nilai' => 0, // Default 0 karena guru belum input
                             'nilai_by_siswa' => $nilaiFloat,
                         ]);
                     }

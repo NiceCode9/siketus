@@ -44,4 +44,28 @@ class PenilaianMapel extends Model
     {
         return $this->belongsTo(Kelas::class, 'kelas_id');
     }
+
+    /**
+     * Relationship: PenilaianMapel has one RemidiSiswa
+     */
+    public function remidiSiswa()
+    {
+        return $this->hasOne(RemidiSiswa::class, 'penilaian_mapel_id');
+    }
+
+    /**
+     * Check if this penilaian needs remidi
+     */
+    public function needsRemidi()
+    {
+        return $this->status_ketuntasan === 'remidi';
+    }
+
+    /**
+     * Check if this penilaian is tuntas
+     */
+    public function isTuntas()
+    {
+        return $this->status_ketuntasan === 'tuntas';
+    }
 }

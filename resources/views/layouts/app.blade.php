@@ -21,6 +21,36 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
+    <style>
+        .navbar-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.6rem;
+            padding: 2px 4px;
+            border-radius: 10px;
+        }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .notification-badge {
+            animation: pulse-badge 2s infinite;
+        }
+
+        @keyframes pulse-badge {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+    </style>
     @stack('css')
 
 </head>
@@ -131,6 +161,31 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="{{ asset('assets') }}/dist/js/adminlte.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        @if (Auth::check() && Auth::user()->hasRole('siswa'))
+            // Auto refresh notification count every 30 seconds
+            setInterval(function() {
+                $.get('{{ route('siswa.remidi.notification-count') }}', function(response) {
+                    if (response.success) {
+                        if (response.data.count > 0) {
+                            if ($('.notification-badge').length == 0) {
+                                $('.nav-link:has(.fa-bell)').append(
+                                    '<span class="badge badge-danger navbar-badge notification-badge">' +
+                                    response.data.badge_text +
+                                    '</span>'
+                                );
+                            } else {
+                                $('.notification-badge').text(response.data.badge_text);
+                            }
+                        } else {
+                            $('.notification-badge').remove();
+                        }
+                    }
+                });
+            }, 30000); // 30 seconds
+        @endif
+    </script>
 
     @stack('scripts')
 </body>

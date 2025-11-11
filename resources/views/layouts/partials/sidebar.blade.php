@@ -194,6 +194,19 @@
         @endif
 
         @if (auth()->user()->hasRole('siswa'))
+
+            <li class="nav-item">
+                <a href="{{ route('siswa.remidi.index') }}" class="nav-link">
+                    <i class="fas fa-bell"></i>
+                    @if (Auth::user()->siswa->pending_remidi_count > 0)
+                        <span class="badge badge-danger navbar-badge notification-badge">
+                            {{ Auth::user()->siswa->pending_remidi_count > 99 ? '99+' : Auth::user()->siswa->pending_remidi_count }}
+                        </span>
+                    @endif
+                    <span class="d-none d-md-inline ml-1">Remidi</span>
+                </a>
+            </li>
+
             <li class="nav-item">
                 <a href="{{ route('siswa.jadwal.index') }}" class="nav-link">
                     <i class="nav-icon fas fa-calendar-alt"></i>

@@ -33,13 +33,24 @@ class PenilaianSiswaController extends Controller
             ->where('aktif', true)
             ->get();
 
-        // Ambil data nilai yang sudah diinput (guru dan siswa)
-        $nilaiData = $this->penilaianService->getNilaiDataForSiswa($user->siswa->id, $guruKelas->pluck('id')->toArray());
+        // Ambil data nilai yang sudah diinput (guru dan siswa) WITH ketuntasan info
+        $nilaiData = $this->penilaianService->getNilaiDataForSiswaWithKetuntasan(
+            $user->siswa->id,
+            $guruKelas->pluck('id')->toArray()
+        );
 
         // Ambil data nilai yang berlebih untuk warning
-        $nilaiBerlebih = $this->penilaianService->getNilaiSiswaBerlebih($user->siswa->id, $guruKelas->pluck('id')->toArray());
+        $nilaiBerlebih = $this->penilaianService->getNilaiSiswaBerlebih(
+            $user->siswa->id,
+            $guruKelas->pluck('id')->toArray()
+        );
 
-        return view('siswa.penilaian.index', compact('guruKelas', 'jenisUjians', 'nilaiData', 'nilaiBerlebih'));
+        return view('siswa.penilaian.index', compact(
+            'guruKelas',
+            'jenisUjians',
+            'nilaiData',
+            'nilaiBerlebih'
+        ));
     }
 
     public function store(Request $request)
