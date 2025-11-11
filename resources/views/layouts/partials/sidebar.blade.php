@@ -178,6 +178,12 @@
                 </a>
                 <ul class="nav nav-treeview">
                     <li class="nav-item">
+                        <a href="{{ route('guru.kkm.index') }}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Setup Nilai KKm</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{{ route('guru.penilaian.index') }}" class="nav-link">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Input Nilai</p>
@@ -197,7 +203,7 @@
 
             <li class="nav-item">
                 <a href="{{ route('siswa.remidi.index') }}" class="nav-link">
-                    <i class="fas fa-bell"></i>
+                    <i class="nav-icon fas fa-bell"></i>
                     @if (Auth::user()->siswa->pending_remidi_count > 0)
                         <span class="badge badge-danger navbar-badge notification-badge">
                             {{ Auth::user()->siswa->pending_remidi_count > 99 ? '99+' : Auth::user()->siswa->pending_remidi_count }}
