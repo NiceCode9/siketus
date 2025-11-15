@@ -90,6 +90,7 @@
                                 <tr>
                                     <th width="50">No</th>
                                     <th>Jenis Ujian</th>
+                                    <th width="150">KKM (0-100)</th>
                                     <th width="150">Nilai by siswa (0-100)</th>
                                     <th width="150">Nilai (0-100)</th>
                                     <th>Catatan</th>
@@ -104,6 +105,12 @@
                                             @if ($jenisUjian->deskripsi)
                                                 <br><small class="text-muted">{{ $jenisUjian->deskripsi }}</small>
                                             @endif
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control" min="0" max="100"
+                                                step="0.01"
+                                                value="{{ $existingNilai[$jenisUjian->id]->kkm ?? ($jenisUjian->kkm->kkm ?? '') }}"
+                                                placeholder="0-100" readonly>
                                         </td>
                                         <td>
                                             <input type="number" class="form-control" min="0" max="100"

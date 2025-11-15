@@ -24,4 +24,9 @@ class JenisUjian extends Model
     {
         return $this->hasMany(PenilaianMapel::class, 'jenis_ujian_id');
     }
+
+    public function kkm()
+    {
+        return $this->hasOne(KkmMapel::class, 'jenis_ujian_id');
+    }
 }

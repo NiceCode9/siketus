@@ -184,6 +184,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="{{ route('guru.remidi.index') }}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Data Remidi</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{{ route('guru.penilaian.index') }}" class="nav-link">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Input Nilai</p>
