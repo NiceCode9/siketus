@@ -20,6 +20,20 @@
                 </div>
             @endif
 
+            @if ($errors->any())
+                <div class="alert alert-danger">
+
+                    <ul>
+
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+
+                    </ul>
+
+                </div>
+            @endif
+
             <form method="GET" action="{{ route('guru.penilaian.index') }}" id="filterForm">
                 <div class="row">
                     <div class="col-md-3">
@@ -108,67 +122,161 @@
     </div>
 
     @if (count($siswaList) > 0)
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    Daftar Siswa -
-                    @if ($selectedKategori == 'mapel')
-                        <span class="badge badge-primary">Mata Pelajaran</span>
-                        @if ($guruKelas && $guruKelas->guruMapel)
-                            <span class="badge badge-info">{{ $guruKelas->guruMapel->mapel->nama_mapel }}</span>
-                        @endif
-                    @elseif($selectedKategori == 'kedisiplinan')
-                        <span class="badge badge-warning">Kedisiplinan</span>
-                    @elseif($selectedKategori == 'keagamaan')
-                        <span class="badge badge-success">Kegiatan Keagamaan</span>
-                    @endif
-                </h3>
-            </div>
-            <div class="card-body p-0">
-                <table class="table table-striped table-hover">
-                    <thead>
+        {{-- <form action="{{ route('guru.penilaian.store') }}" method="POST">
+            @csrf
+            <input type="hidden" name="guru_kelas_id" value="{{ $guruKelas->id }}">
+            <table class="table table-bordered" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th class="text-center align-middle" style="width: 250px;">Mata Pelajaran</th>
+                        @foreach ($jenisUjianList as $ju)
+                            <th class="text-center align-middle" style="width: 100px;">{{ $ju->nama_jenis_ujian }}</th>
+                        @endforeach
+                        <th class="text-center align-middle" style="width: 100px;">Rata-rata</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($siswaList as $siswa)
                         <tr>
-                            <th width="50">No</th>
-                            <th>NISN</th>
-                            <th>Nama Siswa</th>
-                            <th>Status</th>
-                            <th width="150" class="text-center">Aksi</th>
+                            <td class="align-middle">
+                                {{ $siswa->nama }} ({{ $siswa->nisn }})
+                                <input type="hidden" name="siswa_id[]" value="{{ $siswa->id }}">
+                            </td>
+                            @foreach ($jenisUjianList as $ju)
+                                <td class="text-center align-middle">
+                                    <input type="number" name="nilai[{{ $siswa->id }}][{{ $ju->id }}]"
+                                        class="form-control"
+                                        value="{{ old('nilai.' . $siswa->id . '.' . $ju->id, isset($nilaiList[$siswa->id][$ju->id]) ? $nilaiList[$siswa->id][$ju->id] : '') }}"
+                                        min="0" max="100" step="0.01" required>
+                                </td>
+                            @endforeach
+                            <td class="text-center align-middle">
+                                <input type="number" name="rata_rata[{{ $siswa->id }}]" class="form-control"
+                                    value="{{ old('rata_rata.' . $siswa->id, isset($rataRataList[$siswa->id]) ? $rataRataList[$siswa->id] : '') }}"
+                                    readonly>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($siswaList as $index => $siswa)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $siswa->nisn }}</td>
-                                <td>{{ $siswa->nama }}</td>
-                                <td>
-                                    <span class="badge badge-{{ $siswa->status == 'aktif' ? 'success' : 'secondary' }}">
-                                        {{ ucfirst($siswa->status) }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <a href="{{ route('guru.penilaian.create', [
-                                        'siswa_id' => $siswa->id,
-                                        'tahun_akademik_id' => $selectedTahunAkademik,
-                                        'kelas_id' => $selectedKelas,
-                                        'semester' => $selectedSemester,
-                                        'kategori' => $selectedKategori,
-                                        'mapel_id' => $selectedMapel,
-                                    ]) }}"
-                                        class="btn btn-sm btn-primary" title="Input Nilai">
-                                        <i class="fas fa-edit"></i> Input Nilai
-                                    </a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center">Tidak ada data siswa</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    @endforeach
+                </tbody>
+            </table>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary" id="btnSimpan">
+                    <i class="fas fa-save"></i> Simpan Nilai
+                </button>
             </div>
-        </div>
+        </form> --}}
+
+        <form action="{{ route('guru.penilaian.store') }}" method="POST">
+            @csrf
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Form Penilaian</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama Siswa</th>
+                                    @if ($selectedKategori == 'mapel')
+                                        @foreach ($jenisUjianList as $jenis)
+                                            <th>{{ $jenis->nama_jenis_ujian }}</th>
+                                        @endforeach
+                                    @elseif ($selectedKategori == 'kedisiplinan')
+                                        @foreach ($kedisiplinanList as $kedisiplinan)
+                                            <th>{{ $kedisiplinan->jenis }}</th>
+                                        @endforeach
+                                    @elseif ($selectedKategori == 'keagamaan')
+                                        @foreach ($kegiatanKeagamaanList as $kegiatan)
+                                            <th>{{ $kegiatan->nama_kegiatan }}</th>
+                                        @endforeach
+                                    @endif
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($siswaList as $index => $siswa)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $siswa->nama }}</td>
+                                        @if ($selectedKategori == 'mapel')
+                                            @foreach ($jenisUjianList as $jenis)
+                                                <td>
+                                                    <input type="hidden" name="mapel_id" value="{{ $selectedMapel }}">
+                                                    <input type="hidden"
+                                                        name="tahun_akademik_id"value="{{ $selectedTahunAkademik }}">
+                                                    <input type="hidden" name="semester" value="{{ $selectedSemester }}">
+                                                    <input type="hidden" name="kelas_id" value="{{ $selectedKelas }}">
+                                                    <input type="hidden" name="kategori" value="{{ $selectedKategori }}">
+                                                    <input type="hidden" name="guru_kelas_id"
+                                                        value="{{ $guruKelas->id }}">
+
+                                                    {{-- <input type="number"
+                                                        name="nilai[{{ $siswa->id }}][{{ $jenis->id }}]"
+                                                        class="form-control"
+                                                        value="{{ old('nilai.' . $siswa->id . '.' . $jenis->id, isset($nilaiList[$siswa->id]['existingNilai'][$jenis->id]) ? $nilaiList[$siswa->id]['existingNilai'][$jenis->id] : '') }}"> --}}
+                                                    <input type="number"
+                                                        name="nilai[{{ $siswa->id }}][{{ $jenis->id }}]"
+                                                        class="form-control"
+                                                        value="{{ $nilaiList[$siswa->id]['existingNilai'][$jenis->id] ?? '' }}">
+                                                </td>
+                                            @endforeach
+                                        @elseif ($selectedKategori == 'kedisiplinan')
+                                            @foreach ($kedisiplinanList as $kedisiplinan)
+                                                <td>
+                                                    <input type="hidden" name="tahun_akademik_id"
+                                                        value="{{ $selectedTahunAkademik }}">
+                                                    <input type="hidden" name="semester"
+                                                        value="{{ $selectedSemester }}">
+                                                    <input type="hidden" name="kelas_id" value="{{ $selectedKelas }}">
+                                                    <input type="hidden" name="kategori"
+                                                        value="{{ $selectedKategori }}">
+
+                                                    <div class="form-check text-center">
+                                                        <input type="hidden"
+                                                            name="nilai[{{ $siswa->id }}][{{ $kedisiplinan->id }}]"
+                                                            value="0">
+                                                        <input type="checkbox" class="form-check-input"
+                                                            name="nilai[{{ $siswa->id }}][{{ $kedisiplinan->id }}]"
+                                                            value="1"
+                                                            id="kedisiplinan_{{ $siswa->id }}_{{ $kedisiplinan->id }}"
+                                                            {{ old("nilai.$siswa->id.$kedisiplinan->id", isset($nilaiList[$siswa->id]['existingNilai'][$kedisiplinan->id]) && $nilaiList[$siswa->id]['existingNilai'][$kedisiplinan->id] == 1 ? 1 : 0) == 1 ? 'checked' : '' }}>
+                                                    </div>
+                                                </td>
+                                            @endforeach
+                                        @elseif ($selectedKategori == 'keagamaan')
+                                            @foreach ($kegiatanKeagamaanList as $kegiatan)
+                                                <td>
+                                                    <input type="hidden" name="tahun_akademik_id"
+                                                        value="{{ $selectedTahunAkademik }}">
+                                                    <input type="hidden" name="semester"
+                                                        value="{{ $selectedSemester }}">
+                                                    <input type="hidden" name="kelas_id" value="{{ $selectedKelas }}">
+                                                    <input type="hidden" name="kategori"
+                                                        value="{{ $selectedKategori }}">
+
+                                                    <input type="number"
+                                                        name="nilai[{{ $siswa->id }}][{{ $kegiatan->id }}]"
+                                                        class="form-control" min="0" max="100"
+                                                        step="0.01"
+                                                        value="{{ old("nilai.$siswa->id.$kegiatan->id", isset($nilaiList[$siswa->id]['existingNilai'][$kegiatan->id]) ? $nilaiList[$siswa->id]['existingNilai'][$kegiatan->id] : '') }}">
+                                                </td>
+                                            @endforeach
+                                        @endif
+
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary" id="btnSimpan">
+                                <i class="fas fa-save"></i> Simpan Nilai
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
 
         @if ($selectedKategori == 'mapel' && $jenisUjianList->count() == 0)
             <div class="alert alert-warning">

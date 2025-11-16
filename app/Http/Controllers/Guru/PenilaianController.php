@@ -41,7 +41,7 @@ class PenilaianController extends Controller
         $kedisiplinanList = [];
         $kegiatanKeagamaanList = [];
         $guruKelas = null;
-        $kkmData = collect(); // ADD: KKM data
+        $nilaiList = [];
 
         if ($selectedTahunAkademik) {
             // Get kelas yang diampu guru
@@ -56,17 +56,70 @@ class PenilaianController extends Controller
                     $jenisUjianList = $this->penilaianService->getJenisUjianList($selectedTahunAkademik);
                     $guruKelas = $this->penilaianService->getGuruKelas($guru->id, $selectedKelas, $selectedTahunAkademik, $selectedMapel);
 
-                    // ADD: Get KKM data
-                    if ($guruKelas) {
-                        $kkmData = $this->kkmService->getKkmByGuruKelas($guruKelas->id, $selectedTahunAkademik);
+                    $existingNilai = [];
+                    foreach ($siswaList as $siswa) {
+                        $nilaiData = $this->penilaianService->getFormData(
+                            $siswa->id,
+                            $selectedTahunAkademik,
+                            $selectedKelas,
+                            $selectedSemester,
+                            $selectedKategori,
+                            $guru->id,
+                            $selectedMapel
+                        );
+                        $mappedNilai = [];
+
+                        foreach ($nilaiData['existingNilai'] as $item) {
+                            $mappedNilai[$item->jenis_ujian_id] = $item->nilai;
+                        }
+
+                        $existingNilai[$siswa->id]['existingNilai'] = $mappedNilai;
                     }
+                    $nilaiList = $existingNilai;
                 } elseif ($selectedKategori === 'kedisiplinan') {
-                    if (!Auth::user()->can('penilaian-kedisiplinan')) {
-                        abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
-                    }
                     $kedisiplinanList = $this->penilaianService->getKedisiplinanList();
+
+                    // Ambil data nilai kedisiplinan yang sudah ada
+                    $existingNilai = [];
+                    foreach ($siswaList as $siswa) {
+                        $nilaiData = $this->penilaianService->getFormData(
+                            $siswa->id,
+                            $selectedTahunAkademik,
+                            $selectedKelas,
+                            $selectedSemester,
+                            $selectedKategori,
+                        );
+                        $mappedNilai = [];
+
+                        foreach ($nilaiData['existingNilai'] as $item) {
+                            $mappedNilai[$item->kedisiplinan_id] = $item->validasi;
+                        }
+
+                        $existingNilai[$siswa->id]['existingNilai'] = $mappedNilai;
+                    }
+                    $nilaiList = $existingNilai;
                 } elseif ($selectedKategori === 'keagamaan') {
                     $kegiatanKeagamaanList = $this->penilaianService->getKegiatanKeagamaanList($selectedTahunAkademik, $selectedSemester);
+
+                    // Ambil data nilai keagamaan yang sudah ada
+                    $existingNilai = [];
+                    foreach ($siswaList as $siswa) {
+                        $nilaiData = $this->penilaianService->getFormData(
+                            $siswa->id,
+                            $selectedTahunAkademik,
+                            $selectedKelas,
+                            $selectedSemester,
+                            $selectedKategori,
+                        );
+                        $mappedNilai = [];
+
+                        foreach ($nilaiData['existingNilai'] as $item) {
+                            $mappedNilai[$item->kegiatan_keagamaan_id] = $item->nilai;
+                        }
+
+                        $existingNilai[$siswa->id]['existingNilai'] = $mappedNilai;
+                    }
+                    $nilaiList = $existingNilai;
                 }
             }
         }
@@ -84,7 +137,7 @@ class PenilaianController extends Controller
             'kegiatanKeagamaanList',
             'guruKelas',
             'selectedMapel',
-            'kkmData' // ADD: Pass KKM data to view
+            'nilaiList'
         ));
     }
 
@@ -118,14 +171,28 @@ class PenilaianController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'siswa_id' => 'required|exists:siswa,id',
+        $rules = [
             'tahun_akademik_id' => 'required|exists:tahun_akademik,id',
             'kelas_id' => 'required|exists:kelas,id',
             'semester' => 'required|in:ganjil,genap',
             'kategori' => 'required|in:mapel,kedisiplinan,keagamaan',
-            'mapel_id' => 'required_if:kategori,mapel|exists:mapel,id',
-        ]);
+        ];
+
+        // Tambahkan validasi sesuai kategori
+        if ($request->kategori === 'mapel') {
+            $rules['mapel_id'] = 'required|exists:mapel,id';
+            $rules['guru_kelas_id'] = 'required|exists:guru_kelas,id';
+            $rules['nilai'] = 'required|array';
+            $rules['nilai.*.*'] = 'nullable|numeric|min:0|max:100';
+        } elseif ($request->kategori === 'kedisiplinan') {
+            $rules['nilai'] = 'required|array';
+            $rules['nilai.*.*'] = 'nullable|in:0,1'; // Validasi checkbox
+        } elseif ($request->kategori === 'keagamaan') {
+            $rules['nilai'] = 'required|array';
+            $rules['nilai.*.*'] = 'nullable|numeric|min:0|max:100';
+        }
+
+        $validated = $request->validate($rules);
 
         $guru = Auth::user()->guru;
 
@@ -134,11 +201,14 @@ class PenilaianController extends Controller
             $data = array_merge($validated, [
                 'guru_id' => $guru->id,
                 'nilai' => $request->nilai,
-                'catatan' => $request->catatan,
-                'mapel_id' => $request->mapel_id,
             ]);
 
-            // Call service untuk store penilaian (with KKM check & auto remidi)
+            // Tambahkan guru_kelas_id jika kategori mapel
+            if ($validated['kategori'] === 'mapel') {
+                $data['guru_kelas_id'] = $validated['guru_kelas_id'];
+            }
+
+            // Call service untuk store penilaian
             $this->penilaianService->storePenilaian($data);
 
             $redirectParams = [

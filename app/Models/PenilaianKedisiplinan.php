@@ -17,7 +17,12 @@ class PenilaianKedisiplinan extends Model
         'semester',
         'kedisiplinan_id',
         'nilai',
+        'validasi',
         'catatan',
+    ];
+
+    protected $casts = [
+        'validasi' => 'boolean',
     ];
 
     public function siswa()
