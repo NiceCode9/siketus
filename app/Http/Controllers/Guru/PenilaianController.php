@@ -38,6 +38,7 @@ class PenilaianController extends Controller
         $kedisiplinanList = [];
         $kegiatanKeagamaanList = [];
         $guruKelas = null;
+        $nilaiList = [];
 
         if ($selectedTahunAkademik) {
             // Get kelas yang diampu guru
@@ -51,15 +52,78 @@ class PenilaianController extends Controller
                 if ($selectedKategori === 'mapel') {
                     $jenisUjianList = $this->penilaianService->getJenisUjianList($selectedTahunAkademik);
                     $guruKelas = $this->penilaianService->getGuruKelas($guru->id, $selectedKelas, $selectedTahunAkademik, $selectedMapel);
+                    $existingNilai = [];
+                    foreach ($siswaList as $siswa) {
+                        $nilaiData = $this->penilaianService->getFormData(
+                            $siswa->id,
+                            $selectedTahunAkademik,
+                            $selectedKelas,
+                            $selectedSemester,
+                            $selectedKategori,
+                            $guru->id,
+                            $selectedMapel
+                        );
+                        $mappedNilai = [];
+
+                        foreach ($nilaiData['existingNilai'] as $item) {
+                            $mappedNilai[$item->jenis_ujian_id] = $item->nilai;
+                        }
+
+                        // simpan ke array utama
+                        $existingNilai[$siswa->id]['existingNilai'] = $mappedNilai;
+                    }
+                    $nilaiList = $existingNilai;
                 } elseif ($selectedKategori === 'kedisiplinan') {
                     $kedisiplinanList = $this->penilaianService->getKedisiplinanList();
+
+                    // Ambil data nilai kedisiplinan yang sudah ada
+                    $existingNilai = [];
+                    foreach ($siswaList as $siswa) {
+                        $nilaiData = $this->penilaianService->getFormData(
+                            $siswa->id,
+                            $selectedTahunAkademik,
+                            $selectedKelas,
+                            $selectedSemester,
+                            $selectedKategori,
+                        );
+                        $mappedNilai = [];
+
+                        foreach ($nilaiData['existingNilai'] as $item) {
+                            $mappedNilai[$item->kedisiplinan_id] = $item->validasi;
+                        }
+
+                        // simpan ke array utama
+                        $existingNilai[$siswa->id]['existingNilai'] = $mappedNilai;
+                    }
+                    $nilaiList = $existingNilai;
                 } elseif ($selectedKategori === 'keagamaan') {
                     $kegiatanKeagamaanList = $this->penilaianService->getKegiatanKeagamaanList($selectedTahunAkademik, $selectedSemester);
+
+                    // Ambil data nilai keagamaan yang sudah ada
+                    $existingNilai = [];
+                    foreach ($siswaList as $siswa) {
+                        $nilaiData = $this->penilaianService->getFormData(
+                            $siswa->id,
+                            $selectedTahunAkademik,
+                            $selectedKelas,
+                            $selectedSemester,
+                            $selectedKategori,
+                        );
+                        $mappedNilai = [];
+
+                        foreach ($nilaiData['existingNilai'] as $item) {
+                            $mappedNilai[$item->kegiatan_keagamaan_id] = $item->nilai;
+                        }
+
+                        // simpan ke array utama
+                        $existingNilai[$siswa->id]['existingNilai'] = $mappedNilai;
+                    }
+                    $nilaiList = $existingNilai;
                 }
             }
         }
 
-        return view('guru.penilaian.index', compact(
+        return view('guru.penilaian.rev.index', compact(
             'tahunAkademiks',
             'kelasList',
             'siswaList',
@@ -71,7 +135,8 @@ class PenilaianController extends Controller
             'kedisiplinanList',
             'kegiatanKeagamaanList',
             'guruKelas',
-            'selectedMapel'
+            'selectedMapel',
+            'nilaiList'
         ));
     }
 
@@ -103,16 +168,73 @@ class PenilaianController extends Controller
         return view('guru.penilaian.create', $data);
     }
 
+    // public function store(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'siswa_id' => 'required|exists:siswa,id',
+    //         'tahun_akademik_id' => 'required|exists:tahun_akademik,id',
+    //         'kelas_id' => 'required|exists:kelas,id',
+    //         'semester' => 'required|in:ganjil,genap',
+    //         'kategori' => 'required|in:mapel,kedisiplinan,keagamaan',
+    //         'mapel_id' => 'required_if:kategori,mapel|exists:mapel,id',
+    //     ]);
+
+    //     $guru = Auth::user()->guru;
+
+    //     try {
+    //         // Prepare data untuk service
+    //         $data = array_merge($validated, [
+    //             'guru_id' => $guru->id,
+    //             'nilai' => $request->nilai,
+    //             'catatan' => $request->catatan,
+    //             'mapel_id' => $request->mapel_id,
+    //         ]);
+
+    //         // Call service untuk store penilaian
+    //         $this->penilaianService->storePenilaian($data);
+
+    //         $redirectParams = [
+    //             'tahun_akademik_id' => $validated['tahun_akademik_id'],
+    //             'kelas_id' => $validated['kelas_id'],
+    //             'semester' => $validated['semester'],
+    //             'kategori' => $validated['kategori'],
+    //         ];
+
+    //         if ($validated['kategori'] === 'mapel') {
+    //             $redirectParams['mapel_id'] = $validated['mapel_id'];
+    //         }
+
+    //         return redirect()->route('guru.penilaian.index', $redirectParams)
+    //             ->with('success', 'Penilaian berhasil disimpan');
+    //     } catch (\Exception $e) {
+    //         return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+    //     }
+    // }
+
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'siswa_id' => 'required|exists:siswa,id',
+        $rules = [
             'tahun_akademik_id' => 'required|exists:tahun_akademik,id',
             'kelas_id' => 'required|exists:kelas,id',
             'semester' => 'required|in:ganjil,genap',
             'kategori' => 'required|in:mapel,kedisiplinan,keagamaan',
-            'mapel_id' => 'required_if:kategori,mapel|exists:mapel,id',
-        ]);
+        ];
+
+        // Tambahkan validasi sesuai kategori
+        if ($request->kategori === 'mapel') {
+            $rules['mapel_id'] = 'required|exists:mapel,id';
+            $rules['guru_kelas_id'] = 'required|exists:guru_kelas,id';
+            $rules['nilai'] = 'required|array';
+            $rules['nilai.*.*'] = 'nullable|numeric|min:0|max:100';
+        } elseif ($request->kategori === 'kedisiplinan') {
+            $rules['nilai'] = 'required|array';
+            $rules['nilai.*.*'] = 'nullable|in:0,1'; // Validasi checkbox
+        } elseif ($request->kategori === 'keagamaan') {
+            $rules['nilai'] = 'required|array';
+            $rules['nilai.*.*'] = 'nullable|numeric|min:0|max:100';
+        }
+
+        $validated = $request->validate($rules);
 
         $guru = Auth::user()->guru;
 
@@ -121,9 +243,12 @@ class PenilaianController extends Controller
             $data = array_merge($validated, [
                 'guru_id' => $guru->id,
                 'nilai' => $request->nilai,
-                'catatan' => $request->catatan,
-                'mapel_id' => $request->mapel_id,
             ]);
+
+            // Tambahkan guru_kelas_id jika kategori mapel
+            if ($validated['kategori'] === 'mapel') {
+                $data['guru_kelas_id'] = $validated['guru_kelas_id'];
+            }
 
             // Call service untuk store penilaian
             $this->penilaianService->storePenilaian($data);

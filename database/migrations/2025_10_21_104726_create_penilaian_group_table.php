@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignId('kelas_id')->constrained('kelas')->onDelete('cascade');
             $table->enum('semester', ['ganjil', 'genap']);
             $table->foreignId('kedisiplinan_id')->constrained('kedisiplinan')->onDelete('cascade');
-            $table->decimal('nilai', 5, 2);
+            $table->decimal('nilai', 5, 2)->nullable();
             $table->text('catatan')->nullable();
             $table->timestamps();
 

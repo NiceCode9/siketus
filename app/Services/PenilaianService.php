@@ -91,7 +91,7 @@ class PenilaianService
     {
         return PenilaianMapel::where('siswa_id', $siswaId)
             ->where('guru_kelas_id', $guruKelasId)
-            // ->where('semester', $semester)
+            ->where('semester', $semester)
             ->get()
             ->keyBy('jenis_ujian_id');
     }
@@ -123,6 +123,48 @@ class PenilaianService
     /**
      * Store nilai mapel
      */
+    // public function storeNilaiMapel(array $data)
+    // {
+    //     $guruKelas = $this->getGuruKelas(
+    //         $data['guru_id'],
+    //         $data['kelas_id'],
+    //         $data['tahun_akademik_id'],
+    //         $data['mapel_id']
+    //     );
+
+    //     if (!$guruKelas) {
+    //         throw new \Exception('Guru kelas tidak ditemukan');
+    //     }
+
+    //     DB::beginTransaction();
+    //     try {
+    //         foreach ($data['nilai'] as $jenisUjianId => $nilai) {
+    //             if ($nilai !== null && $nilai !== '') {
+    //                 PenilaianMapel::updateOrCreate(
+    //                     [
+    //                         'siswa_id' => $data['siswa_id'],
+    //                         'guru_kelas_id' => $guruKelas->id,
+    //                         'jenis_ujian_id' => $jenisUjianId,
+    //                         'semester' => $data['semester'],
+    //                     ],
+    //                     [
+    //                         'tahun_akademik_id' => $data['tahun_akademik_id'],
+    //                         'kelas_id' => $data['kelas_id'],
+    //                         'nilai' => $nilai,
+    //                         'catatan' => $data['catatan'][$jenisUjianId] ?? null,
+    //                     ]
+    //                 );
+    //             }
+    //         }
+
+    //         DB::commit();
+    //         return true;
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         dd($e->getMessage());
+    //         throw $e;
+    //     }
+    // }
     public function storeNilaiMapel(array $data)
     {
         $guruKelas = $this->getGuruKelas(
@@ -138,22 +180,24 @@ class PenilaianService
 
         DB::beginTransaction();
         try {
-            foreach ($data['nilai'] as $jenisUjianId => $nilai) {
-                if ($nilai !== null && $nilai !== '') {
-                    PenilaianMapel::updateOrCreate(
-                        [
-                            'siswa_id' => $data['siswa_id'],
-                            'guru_kelas_id' => $guruKelas->id,
-                            'jenis_ujian_id' => $jenisUjianId,
-                            'semester' => $data['semester'],
-                        ],
-                        [
-                            'tahun_akademik_id' => $data['tahun_akademik_id'],
-                            'kelas_id' => $data['kelas_id'],
-                            'nilai' => $nilai,
-                            'catatan' => $data['catatan'][$jenisUjianId] ?? null,
-                        ]
-                    );
+            foreach ($data['nilai'] as $siswaId => $jenisUjianNilai) {
+                foreach ($jenisUjianNilai as $jenisUjianId => $nilai) {
+                    if ($nilai !== null && $nilai !== '') {
+                        PenilaianMapel::updateOrCreate(
+                            [
+                                'siswa_id' => $siswaId,
+                                'guru_kelas_id' => $data['guru_kelas_id'],
+                                'jenis_ujian_id' => $jenisUjianId,
+                                'semester' => $data['semester'],
+                            ],
+                            [
+                                'tahun_akademik_id' => $data['tahun_akademik_id'],
+                                'kelas_id' => $data['kelas_id'],
+                                'nilai' => $nilai,
+                                // 'catatan' => $data['catatan'][$jenisUjianId] ?? null,
+                            ]
+                        );
+                    }
                 }
             }
 
@@ -173,11 +217,12 @@ class PenilaianService
     {
         DB::beginTransaction();
         try {
-            foreach ($data['nilai'] as $kedisiplinanId => $nilai) {
-                if ($nilai !== null && $nilai !== '') {
+            foreach ($data['nilai'] as $siswaId => $kedisiplinanNilai) {
+                foreach ($kedisiplinanNilai as $kedisiplinanId => $validasi) {
+                    // Simpan data, termasuk jika nilai 0 (tidak dicentang)
                     PenilaianKedisiplinan::updateOrCreate(
                         [
-                            'siswa_id' => $data['siswa_id'],
+                            'siswa_id' => $siswaId,
                             'tahun_akademik_id' => $data['tahun_akademik_id'],
                             'semester' => $data['semester'],
                             'kedisiplinan_id' => $kedisiplinanId,
@@ -185,8 +230,7 @@ class PenilaianService
                         [
                             'guru_id' => $data['guru_id'],
                             'kelas_id' => $data['kelas_id'],
-                            'nilai' => $nilai,
-                            'catatan' => $data['catatan'][$kedisiplinanId] ?? null,
+                            'validasi' => (bool) $validasi, // Convert ke boolean
                         ]
                     );
                 }
@@ -200,6 +244,7 @@ class PenilaianService
         }
     }
 
+
     /**
      * Store nilai keagamaan
      */
@@ -207,22 +252,24 @@ class PenilaianService
     {
         DB::beginTransaction();
         try {
-            foreach ($data['nilai'] as $kegiatanId => $nilai) {
-                if ($nilai !== null && $nilai !== '') {
-                    PenilaianKeagamaan::updateOrCreate(
-                        [
-                            'siswa_id' => $data['siswa_id'],
-                            'kegiatan_keagamaan_id' => $kegiatanId,
-                            'tahun_akademik_id' => $data['tahun_akademik_id'],
-                            'semester' => $data['semester'],
-                        ],
-                        [
-                            'guru_id' => $data['guru_id'],
-                            'kelas_id' => $data['kelas_id'],
-                            'nilai' => $nilai,
-                            'catatan' => $data['catatan'][$kegiatanId] ?? null,
-                        ]
-                    );
+            foreach ($data['nilai'] as $siswaId => $kegiatanNilai) {
+                foreach ($kegiatanNilai as $kegiatanId => $nilai) {
+                    // Hanya simpan jika ada nilai yang diinput
+                    if ($nilai !== null && $nilai !== '') {
+                        PenilaianKeagamaan::updateOrCreate(
+                            [
+                                'siswa_id' => $siswaId,
+                                'kegiatan_keagamaan_id' => $kegiatanId,
+                                'tahun_akademik_id' => $data['tahun_akademik_id'],
+                                'semester' => $data['semester'],
+                            ],
+                            [
+                                'guru_id' => $data['guru_id'],
+                                'kelas_id' => $data['kelas_id'],
+                                'nilai' => $nilai,
+                            ]
+                        );
+                    }
                 }
             }
 
@@ -254,7 +301,7 @@ class PenilaianService
     /**
      * Get data for create/edit form based on kategori
      */
-    public function getFormData($siswaId, $tahunAkademikId, $kelasId, $semester, $kategori, $guruId, $mapelId)
+    public function getFormData($siswaId, $tahunAkademikId, $kelasId, $semester, $kategori, $guruId = null, $mapelId = null)
     {
         $data = [];
 
@@ -265,7 +312,7 @@ class PenilaianService
             $data['jenisUjianList'] = $this->getJenisUjianList($tahunAkademikId);
             $data['existingNilai'] = $this->getExistingNilaiMapel($siswaId, $guruKelas->id, $semester);
         } elseif ($kategori === 'kedisiplinan') {
-            $data['kedisiplinanList'] = $this->getKedisiplinanList();
+            // $data['kedisiplinanList'] = $this->getKedisiplinanList();
             $data['existingNilai'] = $this->getExistingNilaiKedisiplinan($siswaId, $tahunAkademikId, $semester);
         } elseif ($kategori === 'keagamaan') {
             $data['kegiatanKeagamaanList'] = $this->getKegiatanKeagamaanList($tahunAkademikId, $semester);
@@ -274,7 +321,6 @@ class PenilaianService
 
         return $data;
     }
-
 
 
     // Proses untuk controller siswa
