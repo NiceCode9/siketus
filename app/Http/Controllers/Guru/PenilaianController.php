@@ -61,9 +61,9 @@ class PenilaianController extends Controller
                         $kkmData = $this->kkmService->getKkmByGuruKelas($guruKelas->id, $selectedTahunAkademik);
                     }
                 } elseif ($selectedKategori === 'kedisiplinan') {
-                    if (!Auth::user()->can('penilaian-kedisiplinan')) {
-                        abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
-                    }
+                    // if (!Auth::user()->can('penilaian-kedisiplinan')) {
+                    //     abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
+                    // }
                     $kedisiplinanList = $this->penilaianService->getKedisiplinanList();
                 } elseif ($selectedKategori === 'keagamaan') {
                     $kegiatanKeagamaanList = $this->penilaianService->getKegiatanKeagamaanList($selectedTahunAkademik, $selectedSemester);
