@@ -77,6 +77,9 @@ class PenilaianController extends Controller
                     }
                     $nilaiList = $existingNilai;
                 } elseif ($selectedKategori === 'kedisiplinan') {
+                    // if (!Auth::user()->can('penilaian-kedisiplinan')) {
+                    //     abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
+                    // }
                     $kedisiplinanList = $this->penilaianService->getKedisiplinanList();
 
                     // Ambil data nilai kedisiplinan yang sudah ada
