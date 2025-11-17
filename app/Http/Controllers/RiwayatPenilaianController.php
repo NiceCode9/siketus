@@ -344,20 +344,31 @@ class RiwayatPenilaianController extends Controller
     //     return $pdf->stream($filename);
     // }
 
-    public function siswaPrintPdfLaporanMapel(Request $request)
+    public function siswaPrintPdfLaporan(Request $request)
     {
         $data = [
             'tahun_akademik_id' => $request->tahun_akademik_id,
             'semester' => $request->semester,
+            'kategori' => $request->kategori,
             'siswa_id' => Auth::user()->siswa->id,
         ];
 
-        $reportData = $this->reportUjianService->getDataUjianMapel($data);
+        $page = null;
 
-        $pdf = PDF::loadView('report-ujian.pdf', $reportData);
+        if ($data['kategori'] === 'mapel') {
+            $reportData = $this->reportUjianService->getDataUjianMapel($data);
+            $page = 'report-ujian.pdf-mapel';
+        } elseif ($data['kategori'] === 'kedisiplinan') {
+            $reportData = $this->reportUjianService->getDataUjianKedisiplinan($data);
+            $page = 'report-ujian.pdf-kedisiplinan';
+        } else {
+            abort(404, 'Kategori tidak valid untuk laporan PDF.');
+        }
+
+        $pdf = PDF::loadView($page, $reportData);
         $pdf->setPaper('A4', 'landscape');
 
-        $fileName = 'Laporan_Ujian_' . $reportData['siswa']->nama . '_' . date('YmdHis') . '.pdf';
+        $fileName = 'Laporan_Ujian_' . $data['kategori'] . $reportData['siswa']->nama . '_' . date('YmdHis') . '.pdf';
 
         return $pdf->stream($fileName);
     }

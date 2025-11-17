@@ -92,6 +92,7 @@ class ReportUjianService
             'kelas' => $kelas,
             'jenisUjian' => $jenisUjian,
             'reportData' => $reportData,
+            'pageTitle' => 'LAPORAN PENILAIAN FORMATIF, SUMATIF, DAN UJIAN AKHIR',
         ];
     }
 
@@ -105,6 +106,16 @@ class ReportUjianService
         $tahunAkademik = TahunAkademik::findOrFail($tahunAkademikId);
         $siswa = Siswa::findOrFail($siswaId);
 
+        // Get kelas siswa pada tahun akademik tertentu dari riwayat_kelas
+        $riwayatKelas = RiwayatKelas::with('kelas')
+            ->where('siswa_id', $siswaId)
+            ->where('tahun_akademik_id', $tahunAkademikId)
+            ->first();
+
+        // Jika tidak ada di riwayat, gunakan current_class_id sebagai fallback
+        $kelasId = $riwayatKelas ? $riwayatKelas->kelas_id : $siswa->current_class_id;
+        $kelas = $riwayatKelas ? $riwayatKelas->kelas : $siswa->currentClass;
+
         // Get Kedisiplinan
         $kedisiplinan = Kedisiplinan::orderBy('jenis')->get();
 
@@ -112,19 +123,19 @@ class ReportUjianService
         $penilaianKedisiplinan = PenilaianKedisiplinan::where('siswa_id', $siswaId)
             ->where('tahun_akademik_id', $tahunAkademikId)
             ->where('semester', $semester)
-            ->first();
+            ->get();
 
         $nilai = [];
+        $guru = [];
 
         foreach ($kedisiplinan as $k) {
             foreach ($penilaianKedisiplinan as $pk) {
-                if ($pk->kedisiplinan_id == $k->id) {
+                if ($pk->kedisiplinan_id && $pk->kedisiplinan_id == $k->id) {
                     $nilai[$k->id] = $pk->validasi;
+                    $guru[$k->id] = $pk->guru ? $pk->guru->nama : '-';
                 }
             }
         }
-
-        dd($nilai);
 
         return [
             'tahunAkademik' => $tahunAkademik,
@@ -132,6 +143,9 @@ class ReportUjianService
             'siswa' => $siswa,
             'kedisiplinan' => $kedisiplinan,
             'nilai' => $nilai,
+            'guru' => $guru,
+            'kelas' => $kelas,
+            'pageTitle' => 'LAPORAN PENILAIAN KEDISIPLINAN DAN KERAPIAN',
         ];
     }
 }

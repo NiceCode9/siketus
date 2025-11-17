@@ -122,7 +122,7 @@
 
     <!-- Title -->
     <div class="title-section">
-        <h5>LAPORAN HASIL UJIAN SISWA</h5>
+        <h5>{{ $pageTitle }}</h5>
     </div>
 
     <!-- Info Siswa -->
