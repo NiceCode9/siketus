@@ -264,6 +264,16 @@
                         <h3 class="card-title">
                             <i class="fas fa-pray"></i> Nilai Kegiatan Keagamaan
                         </h3>
+                        <div class="card-tools">
+                            <a href="{{ route('siswa.riwayat-penilaian.siswa.print-pdf', [
+                                'tahun_akademik_id' => $selectedTahunAkademik,
+                                'semester' => $selectedSemester,
+                                'kategori' => 'keagamaan',
+                            ]) }}"
+                                class="btn btn-danger btn-sm" title="Print PDF" target="_blank">
+                                <i class="fas fa-print"></i> Print PDF
+                            </a>
+                        </div>
                     </div>
                     <div class="card-body">
                         @if ($nilaiKeagamaan->count() > 0)

@@ -362,7 +362,8 @@ class RiwayatPenilaianController extends Controller
             $reportData = $this->reportUjianService->getDataUjianKedisiplinan($data);
             $page = 'report-ujian.pdf-kedisiplinan';
         } else {
-            abort(404, 'Kategori tidak valid untuk laporan PDF.');
+            $reportData = $this->reportUjianService->getDataUjianKeagamaan($data);
+            $page = 'report-ujian.pdf-keagamaan';
         }
 
         $pdf = PDF::loadView($page, $reportData);

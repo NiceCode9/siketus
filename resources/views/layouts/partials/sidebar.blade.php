@@ -1,10 +1,11 @@
 <nav class="mt-2">
     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
         <li class="nav-item">
-            <a href="#" class="nav-link">
+            <a href="@if (auth()->user()->hasRole('admin')) {{ route('admin.dashboard') }}@elseif(auth()->user()->hasRole('guru')){{ route('guru.dashboard') }}@elseif(auth()->user()->hasRole('siswa')){{ route('siswa.dashboard') }}@else{{ route('dashboard') }} @endif"
+                class="nav-link">
                 <i class="nav-icon fas fa-home"></i>
                 <p>
-                    Dashoard
+                    Dashboard
                 </p>
             </a>
         </li>

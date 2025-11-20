@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')->prefix('guru')->name('guru.')->group(function () {
+Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Guru\GuruDashboardController::class, 'index'])->name('dashboard');
     // Jadwal Mengajar Guru
     Route::prefix('jadwal')->name('jadwal-guru.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Guru\JadwalGuruController::class, 'index'])->name('index');

@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')->prefix('siswa')->name('siswa.')->group(function () {
+Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Siswa\SiswaDashboardController::class, 'index'])->name('dashboard');
     // Jadwal Kelas Siswa
     Route::prefix('jadwal')->name('jadwal.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Siswa\JadwalSiswaController::class, 'index'])->name('index');
