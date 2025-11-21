@@ -85,10 +85,11 @@ class PenilaianService
     /**
      * Get kegiatan keagamaan list
      */
-    public function getKegiatanKeagamaanList($tahunAkademikId, $semester)
+    public function getKegiatanKeagamaanList($tahunAkademikId, $semester, $tingkat = null)
     {
         return KegiatanKeagamaan::where('tahun_akademik_id', $tahunAkademikId)
             ->where('semester', $semester)
+            ->where('tingkat_kelas', $tingkat)
             ->get();
     }
 

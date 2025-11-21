@@ -188,6 +188,7 @@
                         clearValidationErrors();
                     },
                     error: function(xhr) {
+                        // console.log(xhr.responseJSON);
                         Swal.fire({
                             icon: 'error',
                             title: 'Error!',
@@ -203,7 +204,7 @@
 
                 var formData = new FormData(this);
                 var id = $('#guru_id').val();
-                var url = id ? "{{ route('admin.guru.edit', ':id') }}".replace(':id', id) :
+                var url = id ? "{{ route('admin.guru.update', ':id') }}".replace(':id', id) :
                     "{{ route('admin.guru.store') }}";
                 var method = id ? 'PUT' : 'POST';
 

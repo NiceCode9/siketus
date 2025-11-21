@@ -1,6 +1,11 @@
 @extends('layouts.app', ['pageTitle' => 'Dashboard Siswa'])
 
 @section('content')
+    @if (!$cek)
+        <div class="alert alert-warning" role="alert">
+            Anda Belum Bisa mengikuti ujian karena ada penilaian yang belum Lengkap.
+        </div>
+    @endif
     <div class="row">
         <!-- Profil Siswa Card -->
         <div class="col-lg-4">
@@ -225,8 +230,7 @@
                                             <br>
                                             <small>{{ $event->keterangan }}</small>
                                         </div>
-                                        <span
-                                            class="badge badge-{{ $event->jenis_libur == 'nasional' ? 'danger' : 'info' }}">
+                                        <span class="badge badge-{{ $event->jenis_libur == 'nasional' ? 'danger' : 'info' }}">
                                             {{ ucfirst($event->jenis_libur) }}
                                         </span>
                                     </div>
@@ -282,8 +286,7 @@
                                                 <span class="badge badge-warning">Pending</span>
                                             </td>
                                             <td>
-                                                <a href="{{ route('siswa.remidi.show', $remidi->id) }}"
-                                                    class="btn btn-sm btn-info">
+                                                <a href="{{ route('siswa.remidi.show', $remidi->id) }}" class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i> Detail
                                                 </a>
                                             </td>

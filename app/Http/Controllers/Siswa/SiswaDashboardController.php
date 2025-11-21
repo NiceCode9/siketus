@@ -7,8 +7,12 @@ use App\Models\JadwalPelajaran;
 use App\Models\PenilaianMapel;
 use App\Models\RemidiSiswa;
 use App\Models\Absensi;
+use App\Models\JenisUjian;
 use App\Models\TahunAkademik;
 use App\Models\KalenderAkademik;
+use App\Models\Kedisiplinan;
+use App\Models\KegiatanKeagamaan;
+use App\Models\Mapel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +22,7 @@ class SiswaDashboardController extends Controller
 {
     public function index()
     {
+        $cek = $this->cekKetuntasan();
         $user = Auth::user();
         $siswa = $user->siswa;
         $tahunAkademikAktif = TahunAkademik::where('status_aktif', true)->first();
@@ -79,7 +84,50 @@ class SiswaDashboardController extends Controller
             'remidiPending',
             'rekapAbsensi',
             'kalenderBulanIni',
-            'tahunAkademikAktif'
+            'tahunAkademikAktif',
+            'cek'
         ));
+    }
+
+    private function cekKetuntasan()
+    {
+        $tahunakademik = TahunAkademik::where('status_aktif', true)->first()->id;
+        $jenisUjian = JenisUjian::where('tahun_akademik_id', $tahunakademik)->count();
+        $mapel_master = Mapel::count();
+        $keagamaan_master = KegiatanKeagamaan::where('tahun_akademik_id', $tahunakademik)->count();
+        $kedisiplinan_master = Kedisiplinan::count();
+
+        $siswa = Auth::user()->siswa;
+        $mapel = $siswa->penilaianMapel()
+            ->where('tahun_akademik_id', $tahunakademik)
+            ->count();
+        $keagamaan = $siswa->penilaianKeagamaan()
+            ->where('tahun_akademik_id', $tahunakademik)
+            ->count();
+        $kedisiplinan = $siswa->penilaianKedisiplinan()
+            ->where('tahun_akademik_id', $tahunakademik)
+            ->count();
+
+        $data = [
+            'mapel' => true,
+            'kedisiplinan' => true,
+            'keagamaan' => true,
+        ];
+
+        if ($mapel < ($jenisUjian + $mapel_master)) {
+            $data['mapel'] = false;
+        }
+        if ($kedisiplinan < $kedisiplinan_master) {    
+            $data['kedisiplinan'] = false;
+        }
+        if ($keagamaan < $keagamaan_master) {
+            $data['keagamaan'] = false;
+        }
+
+        if (in_array(false, $data)) {
+            return false;
+        }
+
+        return true;
     }
 }

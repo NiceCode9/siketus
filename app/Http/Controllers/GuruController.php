@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Guru;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Permission\Models\Permission;
 use Yajra\DataTables\Facades\DataTables;
 
 class GuruController extends Controller
@@ -106,7 +107,7 @@ class GuruController extends Controller
         $data = $guru->toArray();
 
         // Cek apakah guru memiliki permission penilaian-kedisiplinan
-        if ($guru->akun && $guru->akun->hasPermissionTo('penilaian-kedisiplinan')) {
+        if ($guru->akun && $guru->akun->can('penilaian-kedisiplinan')) {
             $data['is_guru_bk'] = true;
         } else {
             $data['is_guru_bk'] = false;

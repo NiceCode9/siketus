@@ -77,9 +77,9 @@ class PenilaianController extends Controller
                     }
                     $nilaiList = $existingNilai;
                 } elseif ($selectedKategori === 'kedisiplinan') {
-                    // if (!Auth::user()->can('penilaian-kedisiplinan')) {
-                    //     abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
-                    // }
+                    if (!Auth::user()->can('penilaian-kedisiplinan')) {
+                        abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
+                    }
                     $kedisiplinanList = $this->penilaianService->getKedisiplinanList();
 
                     // Ambil data nilai kedisiplinan yang sudah ada
@@ -102,7 +102,8 @@ class PenilaianController extends Controller
                     }
                     $nilaiList = $existingNilai;
                 } elseif ($selectedKategori === 'keagamaan') {
-                    $kegiatanKeagamaanList = $this->penilaianService->getKegiatanKeagamaanList($selectedTahunAkademik, $selectedSemester);
+                    $kelas = Kelas::find($selectedKelas);
+                    $kegiatanKeagamaanList = $this->penilaianService->getKegiatanKeagamaanList($selectedTahunAkademik, $selectedSemester, $kelas->tingkat);
 
                     // Ambil data nilai keagamaan yang sudah ada
                     $existingNilai = [];
