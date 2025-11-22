@@ -16,14 +16,18 @@ class TahunAkademikSeeder extends Seeder
         $tahunAkademik = [
             [
                 'nama_tahun_akademik' => '2023/2024',
-                'tanggal_mulai' => '2023-07-01',
-                'tanggal_selesai' => '2024-06-30',
+                'tanggal_mulai_ganjil' => '2023-07-01',
+                'tanggal_selesai_ganjil' => '2024-06-30',
+                'tanggal_mulai_genap' => '2024-07-01',
+                'tanggal_selesai_genap' => '2025-06-30',
                 'status_aktif' => false,
             ],
             [
                 'nama_tahun_akademik' => '2024/2025',
-                'tanggal_mulai' => '2025-10-01',
-                'tanggal_selesai' => '2025-11-30',
+                'tanggal_mulai_ganjil' => '2025-10-01',
+                'tanggal_selesai_ganjil' => '2026-06-30',
+                'tanggal_mulai_genap' => '2026-07-01',
+                'tanggal_selesai_genap' => '2027-06-30',
                 'status_aktif' => true,
             ],
         ];

@@ -5,24 +5,32 @@
         <!-- Info Tahun Akademik -->
         <div class="col-lg-12">
             <div class="alert alert-info">
-                <h5><i class="icon fas fa-calendar-alt"></i> Tahun Akademik Aktif</h5>
-                @if ($tahunAkademikAktif)
-                    <strong>{{ $tahunAkademikAktif->nama_tahun_akademik }}</strong>
-                    <br>
-                    <small>
-                        {{ $tahunAkademikAktif->tanggal_mulai->format('d M Y') }} -
-                        {{ $tahunAkademikAktif->tanggal_selesai->format('d M Y') }}
-                    </small>
-                @else
-                    <span class="text-danger">Tidak ada tahun akademik aktif</span>
-                @endif
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">
+                            <i class="icon fas fa-calendar-alt"></i>
+                            Tahun Akademik: <strong>{{ $tahunAkademikAktif->nama_tahun_akademik ?? '-' }}</strong>
+                            &nbsp;|&nbsp;
+                            Semester: <span
+                                class="badge badge-primary">{{ ucfirst($tahunAkademikAktif->semester ?? '-') }}</span>
+                        </h5>
+                    </div>
+                    <div>
+                        <small class="text-muted">
+                            @if ($tahunAkademikAktif)
+                                {{ $tahunAkademikAktif->getTanggalMulai()?->format('d M Y') }} -
+                                {{ $tahunAkademikAktif->getTanggalSelesai()?->format('d M Y') }}
+                            @endif
+                        </small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="row">
         <!-- Kelas yang Diajar -->
-        <div class="col-lg-4 col-6">
+        <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
                 <div class="inner">
                     <h3>{{ $kelasYangDiajar->count() }}</h3>
@@ -38,7 +46,7 @@
         </div>
 
         <!-- Jadwal Hari Ini -->
-        <div class="col-lg-4 col-6">
+        <div class="col-lg-3 col-6">
             <div class="small-box bg-success">
                 <div class="inner">
                     <h3>{{ $jadwalHariIni->count() }}</h3>
@@ -54,7 +62,7 @@
         </div>
 
         <!-- Siswa Perlu Remidi -->
-        <div class="col-lg-4 col-6">
+        <div class="col-lg-3 col-6">
             <div class="small-box bg-warning">
                 <div class="inner">
                     <h3>{{ $siswaRemidi->count() }}</h3>
@@ -68,7 +76,48 @@
                 </a>
             </div>
         </div>
+
+        <!-- Siswa Tidak Layak Ujian -->
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3>{{ $eligibilityData['tidak_layak'] }}</h3>
+                    <p>Tidak Layak Ujian</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-ban"></i>
+                </div>
+                <a href="#siswaTidakLayak" class="small-box-footer">
+                    Lihat Detail <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
     </div>
+
+    {{-- ============================================ --}}
+    {{-- ALERT: SISWA TIDAK LAYAK UJIAN DI KELAS ANDA --}}
+    {{-- ============================================ --}}
+    @if ($eligibilityData['tidak_layak'] > 0)
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="alert alert-danger">
+                    <h5><i class="icon fas fa-exclamation-triangle"></i> Perhatian!</h5>
+                    <p class="mb-0">
+                        Terdapat <strong>{{ $eligibilityData['tidak_layak'] }} siswa</strong> di kelas yang Anda ajar
+                        yang <strong>belum memenuhi syarat</strong> untuk mengikuti Ujian Semester
+                        {{ ucfirst($tahunAkademikAktif->semester ?? '-') }}.
+                        @if ($eligibilityData['masalah_mapel_guru'] > 0)
+                            <br>
+                            <span class="text-warning">
+                                <i class="fas fa-book"></i> {{ $eligibilityData['masalah_mapel_guru'] }} siswa memiliki
+                                masalah di mata pelajaran yang Anda ajar.
+                            </span>
+                        @endif
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <div class="row">
         <!-- Jadwal Mengajar Hari Ini -->
@@ -294,6 +343,125 @@
                     @else
                         <div class="alert alert-success">
                             <i class="fas fa-check-circle"></i> Tidak ada siswa yang perlu remidi saat ini.
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ============================================ --}}
+    {{-- DAFTAR SISWA TIDAK LAYAK UJIAN DI KELAS GURU --}}
+    {{-- ============================================ --}}
+    <div class="row" id="siswaTidakLayak">
+        <div class="col-lg-12">
+            <div class="card card-danger card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-ban mr-1"></i>
+                        Siswa Tidak Layak Ujian di Kelas Anda
+                        <span class="badge badge-danger ml-2">{{ $eligibilityData['tidak_layak'] }} siswa</span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if ($eligibilityData['siswa_tidak_layak']->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th width="5%">No</th>
+                                        <th>NISN</th>
+                                        <th>Nama Siswa</th>
+                                        <th>Kelas</th>
+                                        <th class="text-center">Mapel</th>
+                                        <th class="text-center">Kedisiplinan</th>
+                                        <th class="text-center">Keagamaan</th>
+                                        <th>Ringkasan Masalah</th>
+                                        <th width="10%">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($eligibilityData['siswa_tidak_layak'] as $index => $data)
+                                        <tr class="{{ $data['has_mapel_issues_guru'] ? 'table-warning' : '' }}">
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $data['siswa']->nisn ?? '-' }}</td>
+                                            <td>
+                                                <strong>{{ $data['siswa']->nama ?? '-' }}</strong>
+                                                @if ($data['has_mapel_issues_guru'])
+                                                    <br>
+                                                    <small class="text-danger">
+                                                        <i class="fas fa-exclamation-circle"></i> Perlu remidi di mapel
+                                                        Anda
+                                                    </small>
+                                                @endif
+                                            </td>
+                                            <td>{{ $data['kelas']->nama_lengkap ?? '-' }}</td>
+                                            <td class="text-center">
+                                                @if ($data['has_mapel_issues'])
+                                                    <span class="badge badge-danger" title="Ada masalah nilai mapel">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-success" title="OK">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                @if ($data['has_kedisiplinan_issues'])
+                                                    <span class="badge badge-danger" title="Ada masalah kedisiplinan">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-success" title="OK">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                @if ($data['has_keagamaan_issues'])
+                                                    <span class="badge badge-danger" title="Ada masalah keagamaan">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-success" title="OK">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    @foreach ($data['summary'] as $summary)
+                                                        <span class="d-block text-danger">• {{ $summary }}</span>
+                                                    @endforeach
+                                                </small>
+                                            </td>
+                                            <td>
+                                                @if ($data['has_mapel_issues_guru'])
+                                                    <a href="{{ route('guru.remidi.index') }}"
+                                                        class="btn btn-sm btn-warning" title="Input Nilai Remidi">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {{-- Legend --}}
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-square text-warning"></i> = Siswa yang perlu remidi di mata pelajaran yang
+                                Anda ajar
+                            </small>
+                        </div>
+                    @else
+                        <div class="alert alert-success mb-0">
+                            <i class="fas fa-check-circle"></i>
+                            Semua siswa di kelas yang Anda ajar memenuhi syarat untuk mengikuti Ujian Semester
+                            {{ ucfirst($tahunAkademikAktif->semester ?? '-') }}!
                         </div>
                     @endif
                 </div>

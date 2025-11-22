@@ -18,6 +18,6 @@ class RoleSeeder extends Seeder
         Role::create(['name' => 'guru']);
         Role::create(['name' => 'siswa']);
 
-        Permission::create(['name' => 'penilaian-kedisiplinan;']);
+        Permission::create(['name' => 'penilaian-kedisiplinan']);
     }
 }

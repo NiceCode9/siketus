@@ -17,23 +17,21 @@ class TahunAkademikController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         $request->validate([
             'nama_tahun_akademik' => 'required|string|max:255',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after:tanggal_mulai',
+            'tanggal_mulai_ganjil' => 'required|date',
+            'tanggal_selesai_ganjil' => 'required|date|after:tanggal_mulai_ganjil',
+            'tanggal_mulai_genap' => 'required|date|after:tanggal_selesai_ganjil',
+            'tanggal_selesai_genap' => 'required|date|after:tanggal_mulai_genap',
             'status_aktif' => 'boolean',
+        ], [
+            'tanggal_selesai_ganjil.after' => 'Tanggal selesai semester ganjil harus setelah tanggal mulai.',
+            'tanggal_mulai_genap.after' => 'Tanggal mulai semester genap harus setelah semester ganjil selesai.',
+            'tanggal_selesai_genap.after' => 'Tanggal selesai semester genap harus setelah tanggal mulai.',
         ]);
 
         try {
@@ -61,15 +59,12 @@ class TahunAkademikController extends Controller
      */
     public function show(TahunAkademik $tahunAkademik)
     {
-        return response()->json($tahunAkademik);
-    }
+        // Tambahkan info semester saat ini
+        $data = $tahunAkademik->toArray();
+        $data['current_semester'] = $tahunAkademik->semester;
+        $data['semester_label'] = $tahunAkademik->semester_label;
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(TahunAkademik $tahunAkademik)
-    {
-        // return view('master.tahun-akademik-edit', compact('tahunAkademik'));
+        return response()->json($data);
     }
 
     /**
@@ -79,9 +74,15 @@ class TahunAkademikController extends Controller
     {
         $request->validate([
             'nama_tahun_akademik' => 'required|string|max:255',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after:tanggal_mulai',
+            'tanggal_mulai_ganjil' => 'required|date',
+            'tanggal_selesai_ganjil' => 'required|date|after:tanggal_mulai_ganjil',
+            'tanggal_mulai_genap' => 'required|date|after:tanggal_selesai_ganjil',
+            'tanggal_selesai_genap' => 'required|date|after:tanggal_mulai_genap',
             'status_aktif' => 'boolean',
+        ], [
+            'tanggal_selesai_ganjil.after' => 'Tanggal selesai semester ganjil harus setelah tanggal mulai.',
+            'tanggal_mulai_genap.after' => 'Tanggal mulai semester genap harus setelah semester ganjil selesai.',
+            'tanggal_selesai_genap.after' => 'Tanggal selesai semester genap harus setelah tanggal mulai.',
         ]);
 
         try {
