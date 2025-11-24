@@ -64,7 +64,9 @@ class AbsensiService
         ]);
 
         $kelasId = $pertemuan->jadwalPelajaran->guruKelas->kelas_id;
-        $siswaList = Siswa::where('kelas_id', $kelasId)
+
+        // FIX: Gunakan 'current_class_id' bukan 'kelas_id'
+        $siswaList = Siswa::where('current_class_id', $kelasId)
             ->orderBy('nama')
             ->get();
 
@@ -117,19 +119,41 @@ class AbsensiService
 
     /**
      * Get rekap absensi per kelas
+     * FIXED: Menambahkan support untuk semester
      */
     public function getRekapPerKelas(array $filters = []): Collection
     {
         $kelasId = $filters['kelas_id'];
         $tahunAkademikId = $filters['tahun_akademik_id'] ?? $this->getActiveTahunAkademikId();
         $mapelId = $filters['mapel_id'] ?? null;
+        $semester = $filters['semester'] ?? null; // NEW: Filter semester
 
         $tahunAkademik = TahunAkademik::find($tahunAkademikId);
+
+        // FIXED: Tentukan rentang tanggal berdasarkan semester
+        if ($semester) {
+            if ($semester === 'ganjil') {
+                $tanggalMulai = $tahunAkademik->tanggal_mulai_ganjil;
+                $tanggalSelesai = $tahunAkademik->tanggal_selesai_ganjil;
+            } else {
+                $tanggalMulai = $tahunAkademik->tanggal_mulai_genap;
+                $tanggalSelesai = $tahunAkademik->tanggal_selesai_genap;
+            }
+        } else {
+            // Default: semua semester
+            $tanggalMulai = $tahunAkademik->tanggal_mulai_ganjil;
+            $tanggalSelesai = $tahunAkademik->tanggal_selesai_genap;
+        }
+
+        // Validasi tanggal
+        if (!$tanggalMulai || !$tanggalSelesai) {
+            throw new \Exception('Rentang tanggal semester belum diatur untuk tahun akademik ini.');
+        }
 
         $query = Absensi::select(
             'siswa.id as siswa_id',
             'siswa.nama as nama_siswa',
-            'siswa.nis',
+            'siswa.nisn',
             DB::raw('COUNT(CASE WHEN absensi.status_kehadiran = "hadir" THEN 1 END) as hadir'),
             DB::raw('COUNT(CASE WHEN absensi.status_kehadiran = "izin" THEN 1 END) as izin'),
             DB::raw('COUNT(CASE WHEN absensi.status_kehadiran = "sakit" THEN 1 END) as sakit'),
@@ -137,22 +161,23 @@ class AbsensiService
             DB::raw('COUNT(*) as total_pertemuan')
         )
             ->join('siswa', 'absensi.siswa_id', '=', 'siswa.id')
+            ->join('riwayat_kelas', function ($join) use ($kelasId, $tahunAkademikId) {
+                $join->on('siswa.id', '=', 'riwayat_kelas.siswa_id')
+                    ->where('riwayat_kelas.kelas_id', $kelasId)
+                    ->where('riwayat_kelas.tahun_akademik_id', $tahunAkademikId);
+            })
             ->join('pertemuan', 'absensi.pertemuan_id', '=', 'pertemuan.id')
             ->join('jadwal_pelajaran', 'pertemuan.jadwal_pelajaran_id', '=', 'jadwal_pelajaran.id')
             ->join('guru_kelas', 'jadwal_pelajaran.guru_kelas_id', '=', 'guru_kelas.id')
-            ->where('siswa.kelas_id', $kelasId)
             ->where('guru_kelas.tahun_akademik_id', $tahunAkademikId)
-            ->whereBetween('pertemuan.tanggal', [
-                $tahunAkademik->tanggal_mulai,
-                $tahunAkademik->tanggal_selesai
-            ]);
+            ->whereBetween('pertemuan.tanggal', [$tanggalMulai, $tanggalSelesai]);
 
         if ($mapelId) {
             $query->join('guru_mapel', 'guru_kelas.guru_mapel_id', '=', 'guru_mapel.id')
                 ->where('guru_mapel.mapel_id', $mapelId);
         }
 
-        return $query->groupBy('siswa.id', 'siswa.nama', 'siswa.nis')
+        return $query->groupBy('siswa.id', 'siswa.nama', 'siswa.nisn')
             ->orderBy('siswa.nama')
             ->get()
             ->map(function ($item) {
@@ -165,14 +190,31 @@ class AbsensiService
 
     /**
      * Get rekap absensi per siswa
+     * FIXED: Menambahkan support untuk semester
      */
     public function getRekapPerSiswa(int $siswaId, array $filters = []): array
     {
         $tahunAkademikId = $filters['tahun_akademik_id'] ?? $this->getActiveTahunAkademikId();
         $mapelId = $filters['mapel_id'] ?? null;
+        $semester = $filters['semester'] ?? null; // NEW: Filter semester
         $perPage = $filters['per_page'] ?? 20;
 
         $tahunAkademik = TahunAkademik::find($tahunAkademikId);
+
+        // FIXED: Tentukan rentang tanggal berdasarkan semester
+        if ($semester) {
+            if ($semester === 'ganjil') {
+                $tanggalMulai = $tahunAkademik->tanggal_mulai_ganjil;
+                $tanggalSelesai = $tahunAkademik->tanggal_selesai_ganjil;
+            } else {
+                $tanggalMulai = $tahunAkademik->tanggal_mulai_genap;
+                $tanggalSelesai = $tahunAkademik->tanggal_selesai_genap;
+            }
+        } else {
+            // Default: semua semester
+            $tanggalMulai = $tahunAkademik->tanggal_mulai_ganjil;
+            $tanggalSelesai = $tahunAkademik->tanggal_selesai_genap;
+        }
 
         $query = Absensi::with([
             'pertemuan.jadwalPelajaran.guruKelas.guruMapel.mapel',
@@ -183,11 +225,8 @@ class AbsensiService
             ->whereHas('pertemuan.jadwalPelajaran.guruKelas', function ($q) use ($tahunAkademikId) {
                 $q->where('tahun_akademik_id', $tahunAkademikId);
             })
-            ->whereHas('pertemuan', function ($q) use ($tahunAkademik) {
-                $q->whereBetween('tanggal', [
-                    $tahunAkademik->tanggal_mulai,
-                    $tahunAkademik->tanggal_selesai
-                ]);
+            ->whereHas('pertemuan', function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
             });
 
         if ($mapelId) {
@@ -198,7 +237,7 @@ class AbsensiService
 
         $absensiList = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-        $ringkasan = $this->getRingkasanAbsensi($siswaId, $tahunAkademikId, $mapelId);
+        $ringkasan = $this->getRingkasanAbsensi($siswaId, $tahunAkademikId, $mapelId, $semester);
 
         return [
             'absensiList' => $absensiList,
@@ -208,10 +247,31 @@ class AbsensiService
 
     /**
      * Get ringkasan absensi siswa
+     * FIXED: Menambahkan support untuk semester
      */
-    public function getRingkasanAbsensi(int $siswaId, ?int $tahunAkademikId = null, ?int $mapelId = null): object
-    {
+    public function getRingkasanAbsensi(
+        int $siswaId,
+        ?int $tahunAkademikId = null,
+        ?int $mapelId = null,
+        ?string $semester = null // NEW: Parameter semester
+    ): object {
         $tahunAkademikId = $tahunAkademikId ?? $this->getActiveTahunAkademikId();
+        $tahunAkademik = TahunAkademik::find($tahunAkademikId);
+
+        // FIXED: Tentukan rentang tanggal berdasarkan semester
+        if ($semester) {
+            if ($semester === 'ganjil') {
+                $tanggalMulai = $tahunAkademik->tanggal_mulai_ganjil;
+                $tanggalSelesai = $tahunAkademik->tanggal_selesai_ganjil;
+            } else {
+                $tanggalMulai = $tahunAkademik->tanggal_mulai_genap;
+                $tanggalSelesai = $tahunAkademik->tanggal_selesai_genap;
+            }
+        } else {
+            // Default: semua semester
+            $tanggalMulai = $tahunAkademik->tanggal_mulai_ganjil;
+            $tanggalSelesai = $tahunAkademik->tanggal_selesai_genap;
+        }
 
         $query = Absensi::select(
             DB::raw('COUNT(CASE WHEN status_kehadiran = "hadir" THEN 1 END) as hadir'),
@@ -223,6 +283,9 @@ class AbsensiService
             ->where('siswa_id', $siswaId)
             ->whereHas('pertemuan.jadwalPelajaran.guruKelas', function ($q) use ($tahunAkademikId) {
                 $q->where('tahun_akademik_id', $tahunAkademikId);
+            })
+            ->whereHas('pertemuan', function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
             });
 
         if ($mapelId) {
@@ -249,6 +312,7 @@ class AbsensiService
         $startDate = $filters['start_date'] ?? null;
         $endDate = $filters['end_date'] ?? null;
         $status = $filters['status'] ?? null; // completed, pending, cancelled
+        $semester = $filters['semester'] ?? null; // NEW: Filter semester
 
         $query = Pertemuan::with([
             'jadwalPelajaran.guruKelas.kelas',
@@ -262,8 +326,22 @@ class AbsensiService
                 $q->where('tahun_akademik_id', $tahunAkademikId);
             });
 
+        // FIXED: Gunakan rentang tanggal yang benar
         if ($startDate && $endDate) {
             $query->whereBetween('tanggal', [$startDate, $endDate]);
+        } elseif ($semester) {
+            $tahunAkademik = TahunAkademik::find($tahunAkademikId);
+            if ($semester === 'ganjil') {
+                $query->whereBetween('tanggal', [
+                    $tahunAkademik->tanggal_mulai_ganjil,
+                    $tahunAkademik->tanggal_selesai_ganjil
+                ]);
+            } else {
+                $query->whereBetween('tanggal', [
+                    $tahunAkademik->tanggal_mulai_genap,
+                    $tahunAkademik->tanggal_selesai_genap
+                ]);
+            }
         }
 
         if ($status) {
@@ -283,6 +361,7 @@ class AbsensiService
 
     /**
      * Get statistik absensi untuk dashboard
+     * FIXED: Menambahkan support untuk semester
      */
     public function getStatistikAbsensi(array $filters = []): array
     {
@@ -292,6 +371,7 @@ class AbsensiService
         $siswaId = $filters['siswa_id'] ?? null;
         $startDate = $filters['start_date'] ?? null;
         $endDate = $filters['end_date'] ?? null;
+        $semester = $filters['semester'] ?? null; // NEW: Filter semester
 
         $query = Absensi::query()
             ->join('pertemuan', 'absensi.pertemuan_id', '=', 'pertemuan.id')
@@ -312,8 +392,22 @@ class AbsensiService
             $query->where('absensi.siswa_id', $siswaId);
         }
 
+        // FIXED: Support untuk filter semester
         if ($startDate && $endDate) {
             $query->whereBetween('pertemuan.tanggal', [$startDate, $endDate]);
+        } elseif ($semester) {
+            $tahunAkademik = TahunAkademik::find($tahunAkademikId);
+            if ($semester === 'ganjil') {
+                $query->whereBetween('pertemuan.tanggal', [
+                    $tahunAkademik->tanggal_mulai_ganjil,
+                    $tahunAkademik->tanggal_selesai_ganjil
+                ]);
+            } else {
+                $query->whereBetween('pertemuan.tanggal', [
+                    $tahunAkademik->tanggal_mulai_genap,
+                    $tahunAkademik->tanggal_selesai_genap
+                ]);
+            }
         }
 
         $stats = $query->select(

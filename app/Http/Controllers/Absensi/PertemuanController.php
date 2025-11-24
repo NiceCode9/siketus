@@ -9,7 +9,6 @@ use App\Models\Pertemuan;
 use App\Models\TahunAkademik;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 class PertemuanController extends Controller
@@ -20,21 +19,35 @@ class PertemuanController extends Controller
     public function index(Request $request)
     {
         $tahunAkademikId = $request->get('tahun_akademik_id');
+        $semester = $request->get('semester');
 
         if (!$tahunAkademikId) {
             $tahunAkademik = TahunAkademik::where('status_aktif', true)->first();
             $tahunAkademikId = $tahunAkademik?->id;
+        } else {
+            $tahunAkademik = TahunAkademik::find($tahunAkademikId);
+        }
+
+        // Auto-detect semester jika tidak dipilih
+        if (!$semester && $tahunAkademik) {
+            $semester = $tahunAkademik->semester;
         }
 
         $tahunAkademikList = TahunAkademik::orderBy('created_at', 'desc')->get();
 
         // Statistik pertemuan
         $stats = null;
-        if ($tahunAkademikId) {
-            $stats = $this->getStatistikPertemuan($tahunAkademikId);
+        if ($tahunAkademikId && $semester) {
+            $stats = $this->getStatistikPertemuan($tahunAkademikId, $semester);
         }
 
-        return view('master.pertemuan.index', compact('tahunAkademikList', 'tahunAkademikId', 'stats'));
+        return view('master.pertemuan.index', compact(
+            'tahunAkademikList',
+            'tahunAkademikId',
+            'semester',
+            'stats',
+            'tahunAkademik'
+        ));
     }
 
     /**
@@ -46,91 +59,138 @@ class PertemuanController extends Controller
             'tahun_akademik_id' => 'required|exists:tahun_akademik,id',
         ]);
 
-        $tahunAkademikId = $validated['tahun_akademik_id'];
-        $tahunAkademik = TahunAkademik::find($tahunAkademikId);
+        $tahunAkademik = TahunAkademik::find($validated['tahun_akademik_id']);
 
         try {
-            // Ambil semua jadwal pelajaran untuk tahun akademik ini
-            $jadwalList = JadwalPelajaran::with(['guruKelas'])
-                ->whereHas('guruKelas', function ($q) use ($tahunAkademik) {
-                    $q->where('tahun_akademik_id', $tahunAkademik->id)
-                        ->where('aktif', true);
-                })
-                ->get();
-
-            if ($jadwalList->isEmpty()) {
-                return back()->with('error', 'Tidak ada jadwal pelajaran untuk tahun akademik ini!');
-            }
-
-            // Ambil semua hari libur
-            $hariLibur = KalenderAkademik::where('tahun_akademik_id', $tahunAkademik->id)
-                ->pluck('tanggal')
-                ->map(fn($date) => $date->format('Y-m-d'))
-                ->toArray();
-
-            $totalGenerated = 0;
-            $totalSkipped = 0;
-
             DB::beginTransaction();
 
-            foreach ($jadwalList as $jadwal) {
-                $hariMap = [
-                    'Minggu' => 0,
-                    'Senin' => 1,
-                    'Selasa' => 2,
-                    'Rabu' => 3,
-                    'Kamis' => 4,
-                    'Jumat' => 5,
-                    'Sabtu' => 6,
-                ];
+            $totalGeneratedGanjil = 0;
+            $totalSkippedGanjil = 0;
+            $totalGeneratedGenap = 0;
+            $totalSkippedGenap = 0;
 
-                $targetHari = $hariMap[$jadwal->hari];
-                $currentDate = Carbon::parse($tahunAkademik->tanggal_mulai);
-                $endDate = Carbon::parse($tahunAkademik->tanggal_selesai);
-                $pertemuanKe = 1;
+            // Generate untuk SEMESTER GANJIL
+            if ($tahunAkademik->tanggal_mulai_ganjil && $tahunAkademik->tanggal_selesai_ganjil) {
+                $result = $this->generateSemester($tahunAkademik, 'ganjil');
+                $totalGeneratedGanjil = $result['generated'];
+                $totalSkippedGanjil = $result['skipped'];
+            }
 
-                // Loop dari tanggal mulai sampai selesai
-                while ($currentDate->lte($endDate)) {
-                    // Cek apakah hari sesuai dengan jadwal
-                    if ($currentDate->dayOfWeek === $targetHari) {
-                        $dateStr = $currentDate->format('Y-m-d');
-
-                        // Skip jika hari libur
-                        if (!in_array($dateStr, $hariLibur)) {
-                            // Cek apakah pertemuan sudah ada
-                            $exists = Pertemuan::where('jadwal_pelajaran_id', $jadwal->id)
-                                ->where('tanggal', $dateStr)
-                                ->exists();
-
-                            if (!$exists) {
-                                Pertemuan::create([
-                                    'jadwal_pelajaran_id' => $jadwal->id,
-                                    'tanggal' => $dateStr,
-                                    'pertemuan_ke' => $pertemuanKe,
-                                    'status' => 'scheduled',
-                                    'generated_auto' => true,
-                                ]);
-
-                                $totalGenerated++;
-                            } else {
-                                $totalSkipped++;
-                            }
-
-                            $pertemuanKe++;
-                        }
-                    }
-
-                    $currentDate->addDay();
-                }
+            // Generate untuk SEMESTER GENAP
+            if ($tahunAkademik->tanggal_mulai_genap && $tahunAkademik->tanggal_selesai_genap) {
+                $result = $this->generateSemester($tahunAkademik, 'genap');
+                $totalGeneratedGenap = $result['generated'];
+                $totalSkippedGenap = $result['skipped'];
             }
 
             DB::commit();
 
-            return back()->with('success', "✓ Berhasil generate {$totalGenerated} pertemuan baru! ({$totalSkipped} sudah ada sebelumnya)");
+            $totalGenerated = $totalGeneratedGanjil + $totalGeneratedGenap;
+            $totalSkipped = $totalSkippedGanjil + $totalSkippedGenap;
+
+            $message = "✓ Berhasil generate pertemuan untuk {$tahunAkademik->nama_tahun_akademik}!<br>";
+            $message .= "• Semester Ganjil: {$totalGeneratedGanjil} pertemuan baru<br>";
+            $message .= "• Semester Genap: {$totalGeneratedGenap} pertemuan baru<br>";
+            $message .= "• Total: {$totalGenerated} pertemuan ({$totalSkipped} sudah ada sebelumnya)";
+
+            return back()->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal generate pertemuan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Generate pertemuan untuk satu semester
+     */
+    private function generateSemester(TahunAkademik $tahunAkademik, string $semester): array
+    {
+        $tanggalMulai = $tahunAkademik->getTanggalMulai($semester);
+        $tanggalSelesai = $tahunAkademik->getTanggalSelesai($semester);
+
+        if (!$tanggalMulai || !$tanggalSelesai) {
+            return ['generated' => 0, 'skipped' => 0];
+        }
+
+        // Ambil semua jadwal pelajaran untuk semester ini
+        $jadwalList = JadwalPelajaran::with(['guruKelas'])
+            ->whereHas('guruKelas', function ($q) use ($tahunAkademik, $semester) {
+                $q->where('tahun_akademik_id', $tahunAkademik->id)
+                    ->where('aktif', true);
+            })
+            ->get();
+
+        if ($jadwalList->isEmpty()) {
+            return ['generated' => 0, 'skipped' => 0];
+        }
+
+        // Ambil semua hari libur untuk semester ini
+        $hariLibur = KalenderAkademik::where('tahun_akademik_id', $tahunAkademik->id)
+            ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai])
+            ->pluck('tanggal')
+            ->map(fn($date) => $date->format('Y-m-d'))
+            ->toArray();
+
+        $totalGenerated = 0;
+        $totalSkipped = 0;
+
+        foreach ($jadwalList as $jadwal) {
+            $hariMap = [
+                'Minggu' => 0,
+                'Senin' => 1,
+                'Selasa' => 2,
+                'Rabu' => 3,
+                'Kamis' => 4,
+                'Jumat' => 5,
+                'Sabtu' => 6,
+            ];
+
+            $targetHari = $hariMap[$jadwal->hari];
+            $currentDate = Carbon::parse($tanggalMulai);
+            $endDate = Carbon::parse($tanggalSelesai);
+            $pertemuanKe = 1;
+
+            // Loop dari tanggal mulai sampai selesai
+            while ($currentDate->lte($endDate)) {
+                // Cek apakah hari sesuai dengan jadwal
+                if ($currentDate->dayOfWeek === $targetHari) {
+                    $dateStr = $currentDate->format('Y-m-d');
+
+                    // Skip jika hari libur
+                    if (!in_array($dateStr, $hariLibur)) {
+                        // Cek apakah pertemuan sudah ada
+                        $exists = Pertemuan::where('jadwal_pelajaran_id', $jadwal->id)
+                            ->where('tanggal', $dateStr)
+                            ->where('semester', $semester)
+                            ->exists();
+
+                        if (!$exists) {
+                            Pertemuan::create([
+                                'jadwal_pelajaran_id' => $jadwal->id,
+                                'tanggal' => $dateStr,
+                                'pertemuan_ke' => $pertemuanKe,
+                                'status' => 'scheduled',
+                                'semester' => $semester,
+                                'generated_auto' => true,
+                            ]);
+
+                            $totalGenerated++;
+                        } else {
+                            $totalSkipped++;
+                        }
+
+                        $pertemuanKe++;
+                    }
+                }
+
+                $currentDate->addDay();
+            }
+        }
+
+        return [
+            'generated' => $totalGenerated,
+            'skipped' => $totalSkipped,
+        ];
     }
 
     /**
@@ -143,14 +203,31 @@ class PertemuanController extends Controller
         ]);
 
         try {
-            $deleted = Pertemuan::whereHas('jadwalPelajaran.guruKelas', function ($q) use ($validated) {
-                $q->where('tahun_akademik_id', $validated['tahun_akademik_id']);
+            $deletedGanjil = Pertemuan::whereHas('jadwalPelajaran.guruKelas', function ($q) use ($validated) {
+                $q->where('tahun_akademik_id', $validated['tahun_akademik_id'])
+                    ->where('semester', 'ganjil');
             })
+                ->where('semester', 'ganjil')
                 ->where('status', 'scheduled')
                 ->where('generated_auto', true)
                 ->delete();
 
-            return back()->with('success', "✓ Berhasil menghapus {$deleted} pertemuan yang belum diabsen!");
+            $deletedGenap = Pertemuan::whereHas('jadwalPelajaran.guruKelas', function ($q) use ($validated) {
+                $q->where('tahun_akademik_id', $validated['tahun_akademik_id'])
+                    ->where('semester', 'genap');
+            })
+                ->where('semester', 'genap')
+                ->where('status', 'scheduled')
+                ->where('generated_auto', true)
+                ->delete();
+
+            $total = $deletedGanjil + $deletedGenap;
+
+            $message = "✓ Berhasil menghapus {$total} pertemuan yang belum diabsen!<br>";
+            $message .= "• Semester Ganjil: {$deletedGanjil} pertemuan<br>";
+            $message .= "• Semester Genap: {$deletedGenap} pertemuan";
+
+            return back()->with('success', $message);
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal reset pertemuan: ' . $e->getMessage());
         }
@@ -159,9 +236,15 @@ class PertemuanController extends Controller
     /**
      * Get statistik pertemuan
      */
-    private function getStatistikPertemuan($tahunAkademikId)
+    private function getStatistikPertemuan($tahunAkademikId, $semester)
     {
-        $query = Pertemuan::whereHas('jadwalPelajaran.guruKelas', function ($q) use ($tahunAkademikId) {
+        $query = Pertemuan::whereHas('jadwalPelajaran.guruKelas', function ($q) use ($tahunAkademikId, $semester) {
+            $q->where('tahun_akademik_id', $tahunAkademikId)
+                ->where('semester', $semester);
+        })->where('semester', $semester);
+
+        // Hitung juga total keseluruhan (kedua semester)
+        $queryTotal = Pertemuan::whereHas('jadwalPelajaran.guruKelas', function ($q) use ($tahunAkademikId) {
             $q->where('tahun_akademik_id', $tahunAkademikId);
         });
 
@@ -171,6 +254,10 @@ class PertemuanController extends Controller
             'completed' => (clone $query)->where('status', 'completed')->count(),
             'cancelled' => (clone $query)->where('status', 'cancelled')->count(),
             'ongoing' => (clone $query)->where('status', 'ongoing')->count(),
+            // Total keseluruhan
+            'total_all' => $queryTotal->count(),
+            'total_ganjil' => (clone $queryTotal)->where('semester', 'ganjil')->count(),
+            'total_genap' => (clone $queryTotal)->where('semester', 'genap')->count(),
         ];
     }
 
@@ -180,6 +267,7 @@ class PertemuanController extends Controller
     public function list(Request $request)
     {
         $tahunAkademikId = $request->get('tahun_akademik_id');
+        $semester = $request->get('semester');
         $status = $request->get('status');
         $tanggalMulai = $request->get('tanggal_mulai');
         $tanggalSelesai = $request->get('tanggal_selesai');
@@ -187,6 +275,13 @@ class PertemuanController extends Controller
         if (!$tahunAkademikId) {
             $tahunAkademik = TahunAkademik::where('status_aktif', true)->first();
             $tahunAkademikId = $tahunAkademik?->id;
+        } else {
+            $tahunAkademik = TahunAkademik::find($tahunAkademikId);
+        }
+
+        // Auto-detect semester
+        if (!$semester && $tahunAkademik) {
+            $semester = $tahunAkademik->semester;
         }
 
         $query = Pertemuan::with([
@@ -194,9 +289,11 @@ class PertemuanController extends Controller
             'jadwalPelajaran.guruKelas.guruMapel.mapel',
             'jadwalPelajaran.guruKelas.kelas'
         ])
-            ->whereHas('jadwalPelajaran.guruKelas', function ($q) use ($tahunAkademikId) {
-                $q->where('tahun_akademik_id', $tahunAkademikId);
-            });
+            ->whereHas('jadwalPelajaran.guruKelas', function ($q) use ($tahunAkademikId, $semester) {
+                $q->where('tahun_akademik_id', $tahunAkademikId)
+                    ->where('semester', $semester);
+            })
+            ->where('semester', $semester);
 
         if ($status) {
             $query->where('status', $status);
@@ -220,6 +317,7 @@ class PertemuanController extends Controller
             'pertemuanList',
             'tahunAkademikList',
             'tahunAkademikId',
+            'semester',
             'status',
             'tanggalMulai',
             'tanggalSelesai'

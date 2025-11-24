@@ -361,37 +361,82 @@
                         <i class="fas fa-ban mr-1"></i>
                         Siswa Tidak Layak Ujian di Kelas Anda
                         <span class="badge badge-danger ml-2">{{ $eligibilityData['tidak_layak'] }} siswa</span>
+                        @if ($eligibilityData['masalah_mapel_guru'] > 0)
+                            <span class="badge badge-warning ml-1">{{ $eligibilityData['masalah_mapel_guru'] }} di mapel
+                                Anda</span>
+                        @endif
                     </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     @if ($eligibilityData['siswa_tidak_layak']->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped table-hover">
-                                <thead class="thead-dark">
+                        {{-- Filter & Search --}}
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <input type="text" id="searchSiswaGuru" class="form-control form-control-sm"
+                                    placeholder="Cari nama/NISN siswa...">
+                            </div>
+                            <div class="col-md-3">
+                                <select id="filterKelasGuru" class="form-control form-control-sm">
+                                    <option value="">Semua Kelas</option>
+                                    @foreach ($eligibilityData['siswa_tidak_layak']->pluck('kelas.nama_lengkap')->unique()->sort() as $kelas)
+                                        <option value="{{ $kelas }}">{{ $kelas }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="filterTipeGuru" class="form-control form-control-sm">
+                                    <option value="">Semua Masalah</option>
+                                    <option value="mapel_guru">Hanya Masalah di Mapel Saya</option>
+                                    <option value="mapel">Masalah Mapel (Semua)</option>
+                                    <option value="kedisiplinan">Masalah Kedisiplinan</option>
+                                    <option value="keagamaan">Masalah Keagamaan</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 text-right">
+                                <small class="text-muted">Tampil: <span
+                                        id="countShownGuru">{{ $eligibilityData['siswa_tidak_layak']->count() }}</span></small>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                            <table class="table table-bordered table-striped table-hover table-sm"
+                                id="tableSiswaTidakLayakGuru">
+                                <thead class="thead-dark sticky-top">
                                     <tr>
                                         <th width="5%">No</th>
                                         <th>NISN</th>
                                         <th>Nama Siswa</th>
                                         <th>Kelas</th>
-                                        <th class="text-center">Mapel</th>
-                                        <th class="text-center">Kedisiplinan</th>
-                                        <th class="text-center">Keagamaan</th>
-                                        <th>Ringkasan Masalah</th>
-                                        <th width="10%">Aksi</th>
+                                        <th class="text-center" width="7%">Mapel</th>
+                                        <th class="text-center" width="7%">Kedis</th>
+                                        <th class="text-center" width="7%">Keag</th>
+                                        <th width="25%">Ringkasan</th>
+                                        <th class="text-center" width="10%">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($eligibilityData['siswa_tidak_layak'] as $index => $data)
-                                        <tr class="{{ $data['has_mapel_issues_guru'] ? 'table-warning' : '' }}">
+                                        <tr class="{{ $data['has_mapel_issues_guru'] ? 'table-warning' : '' }}"
+                                            data-kelas="{{ $data['kelas']->nama_lengkap ?? '' }}"
+                                            data-nama="{{ strtolower($data['siswa']->nama ?? '') }}"
+                                            data-nisn="{{ $data['siswa']->nisn ?? '' }}"
+                                            data-mapel="{{ $data['has_mapel_issues'] ? '1' : '0' }}"
+                                            data-mapel-guru="{{ $data['has_mapel_issues_guru'] ? '1' : '0' }}"
+                                            data-kedisiplinan="{{ $data['has_kedisiplinan_issues'] ? '1' : '0' }}"
+                                            data-keagamaan="{{ $data['has_keagamaan_issues'] ? '1' : '0' }}">
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $data['siswa']->nisn ?? '-' }}</td>
                                             <td>
                                                 <strong>{{ $data['siswa']->nama ?? '-' }}</strong>
                                                 @if ($data['has_mapel_issues_guru'])
                                                     <br>
-                                                    <small class="text-danger">
-                                                        <i class="fas fa-exclamation-circle"></i> Perlu remidi di mapel
-                                                        Anda
+                                                    <small class="text-warning">
+                                                        <i class="fas fa-star"></i> Perlu remidi di mapel Anda
                                                     </small>
                                                 @endif
                                             </td>
@@ -409,22 +454,22 @@
                                             </td>
                                             <td class="text-center">
                                                 @if ($data['has_kedisiplinan_issues'])
-                                                    <span class="badge badge-danger" title="Ada masalah kedisiplinan">
+                                                    <span class="badge badge-danger">
                                                         <i class="fas fa-times"></i>
                                                     </span>
                                                 @else
-                                                    <span class="badge badge-success" title="OK">
+                                                    <span class="badge badge-success">
                                                         <i class="fas fa-check"></i>
                                                     </span>
                                                 @endif
                                             </td>
                                             <td class="text-center">
                                                 @if ($data['has_keagamaan_issues'])
-                                                    <span class="badge badge-danger" title="Ada masalah keagamaan">
+                                                    <span class="badge badge-danger">
                                                         <i class="fas fa-times"></i>
                                                     </span>
                                                 @else
-                                                    <span class="badge badge-success" title="OK">
+                                                    <span class="badge badge-success">
                                                         <i class="fas fa-check"></i>
                                                     </span>
                                                 @endif
@@ -436,13 +481,18 @@
                                                     @endforeach
                                                 </small>
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 @if ($data['has_mapel_issues_guru'])
                                                     <a href="{{ route('guru.remidi.index') }}"
                                                         class="btn btn-sm btn-warning" title="Input Nilai Remidi">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 @endif
+                                                <button class="btn btn-sm btn-info" data-toggle="modal"
+                                                    data-target="#detailModalGuru{{ $index }}"
+                                                    title="Lihat Detail">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -450,7 +500,117 @@
                             </table>
                         </div>
 
-                        {{-- Legend --}}
+                        {{-- Modals moved outside the table to keep HTML valid --}}
+                        @foreach ($eligibilityData['siswa_tidak_layak'] as $index => $data)
+                            <div class="modal fade" id="detailModalGuru{{ $index }}" tabindex="-1"
+                                role="dialog">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div
+                                            class="modal-header {{ $data['has_mapel_issues_guru'] ? 'bg-warning' : 'bg-danger' }}">
+                                            <h5 class="modal-title text-white">
+                                                <i class="fas fa-user"></i>
+                                                Detail: {{ $data['siswa']->nama ?? '-' }}
+                                            </h5>
+                                            <button type="button" class="close text-white" data-dismiss="modal">
+                                                <span>&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <strong>NISN:</strong>
+                                                    {{ $data['siswa']->nisn ?? '-' }}<br>
+                                                    <strong>Kelas:</strong>
+                                                    {{ $data['kelas']->nama_lengkap ?? '-' }}
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Status:</strong>
+                                                    <span class="badge badge-danger">Tidak Layak Ujian</span>
+                                                    @if ($data['has_mapel_issues_guru'])
+                                                        <br><br>
+                                                        <span class="badge badge-warning">
+                                                            <i class="fas fa-star"></i> Perlu Remidi di Mapel
+                                                            Anda
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            {{-- Sama seperti admin, tapi bisa highlight masalah di mapel guru --}}
+                                            <div class="accordion" id="accordionDetailGuru{{ $index }}">
+                                                {{-- Detail issues seperti di admin --}}
+                                                @if ($data['has_mapel_issues'])
+                                                    <div class="card">
+                                                        <div
+                                                            class="card-header {{ $data['has_mapel_issues_guru'] ? 'bg-warning' : 'bg-danger' }}">
+                                                            <h5 class="mb-0">
+                                                                <button class="btn btn-link text-white" type="button"
+                                                                    data-toggle="collapse"
+                                                                    data-target="#collapseMapelGuru{{ $index }}">
+                                                                    <i class="fas fa-book"></i> Masalah Penilaian Mapel
+                                                                    @if ($data['has_mapel_issues_guru'])
+                                                                        <i class="fas fa-star ml-2"></i>
+                                                                    @endif
+                                                                </button>
+                                                            </h5>
+                                                        </div>
+                                                        <div id="collapseMapelGuru{{ $index }}"
+                                                            class="collapse show">
+                                                            <div class="card-body p-0">
+                                                                <table class="table table-sm mb-0">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Mata Pelajaran</th>
+                                                                            <th>Jenis Ujian</th>
+                                                                            <th>Status</th>
+                                                                            <th>Keterangan</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @foreach ($data['issues']['mapel'] ?? [] as $issue)
+                                                                            <tr>
+                                                                                <td>{{ $issue['mapel'] }}</td>
+                                                                                <td>{{ $issue['jenis_ujian'] }}</td>
+                                                                                <td>
+                                                                                    @if ($issue['type'] === 'remidi_pending')
+                                                                                        <span
+                                                                                            class="badge badge-danger">{{ $issue['nilai_asli'] }}/{{ $issue['kkm'] }}</span>
+                                                                                    @elseif($issue['type'] === 'no_penilaian')
+                                                                                        <span
+                                                                                            class="badge badge-secondary">Belum
+                                                                                            Ada</span>
+                                                                                    @elseif($issue['type'] === 'nilai_belum_diinput')
+                                                                                        <span
+                                                                                            class="badge badge-warning">Belum
+                                                                                            Dinilai</span>
+                                                                                    @endif
+                                                                                </td>
+                                                                                <td><small>{{ $issue['message'] }}</small>
+                                                                                </td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            @if ($data['has_mapel_issues_guru'])
+                                                <a href="{{ route('guru.remidi.index') }}" class="btn btn-warning">
+                                                    <i class="fas fa-edit"></i> Input Nilai Remidi
+                                                </a>
+                                            @endif
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">Tutup</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                         <div class="mt-3">
                             <small class="text-muted">
                                 <i class="fas fa-square text-warning"></i> = Siswa yang perlu remidi di mata pelajaran yang
@@ -537,5 +697,124 @@
                 }
             }
         });
+
+        // Filter & Search untuk tabel siswa tidak layak
+        $('#searchSiswaGuru').on('keyup', function() {
+            filterTableGuru();
+        });
+
+        $('#filterKelasGuru').on('change', function() {
+            filterTableGuru();
+        });
+
+        $('#filterTipeGuru').on('change', function() {
+            filterTableGuru();
+        });
+
+        function filterTableGuru() {
+            const searchTerm = $('#searchSiswaGuru').val().toLowerCase();
+            const filterKelas = $('#filterKelasGuru').val();
+            const filterTipe = $('#filterTipeGuru').val();
+            let visibleCount = 0;
+
+            $('#tableSiswaTidakLayakGuru tbody tr').each(function() {
+                const row = $(this);
+                const nama = row.data('nama');
+                const nisn = row.data('nisn');
+                const kelas = row.data('kelas');
+                const hasMapel = row.data('mapel') == '1';
+                const hasMapelGuru = row.data('mapel-guru') == '1';
+                const hasKedisiplinan = row.data('kedisiplinan') == '1';
+                const hasKeagamaan = row.data('keagamaan') == '1';
+
+                let showRow = true;
+
+                // Filter by search
+                if (searchTerm && !nama.includes(searchTerm) && !nisn.includes(searchTerm)) {
+                    showRow = false;
+                }
+
+                // Filter by kelas
+                if (filterKelas && kelas !== filterKelas) {
+                    showRow = false;
+                }
+
+                // Filter by tipe
+                if (filterTipe === 'mapel_guru' && !hasMapelGuru) {
+                    showRow = false;
+                } else if (filterTipe === 'mapel' && !hasMapel) {
+                    showRow = false;
+                } else if (filterTipe === 'kedisiplinan' && !hasKedisiplinan) {
+                    showRow = false;
+                } else if (filterTipe === 'keagamaan' && !hasKeagamaan) {
+                    showRow = false;
+                }
+
+                if (showRow) {
+                    row.show();
+                    visibleCount++;
+                } else {
+                    row.hide();
+                }
+            });
+
+            $('#countShownGuru').text(visibleCount);
+        }
     </script>
+@endpush
+
+@push('css')
+    <style>
+        /* Sticky header */
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #343a40;
+        }
+
+        /* Custom scrollbar */
+        .table-responsive::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Highlight row untuk siswa dengan masalah di mapel guru */
+        .table-warning {
+            background-color: #fff3cd !important;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, .05);
+        }
+
+        /* Modal styling */
+        .modal .accordion .card {
+            border: none;
+            margin-bottom: 5px;
+        }
+
+        .modal .accordion .card-header {
+            padding: 8px 15px;
+        }
+
+        .modal .accordion .btn-link {
+            text-decoration: none;
+            width: 100%;
+            text-align: left;
+        }
+    </style>
 @endpush

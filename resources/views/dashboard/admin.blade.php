@@ -310,6 +310,9 @@
                         <span class="badge badge-light ml-2">{{ $eligibilityData['tidak_layak'] }} siswa</span>
                     </h3>
                     <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
                         {{-- Bisa ditambahkan tombol export PDF/Excel di sini --}}
                         {{-- <a href="#" class="btn btn-sm btn-light">
                         <i class="fas fa-file-pdf"></i> Export PDF
@@ -318,23 +321,58 @@
                 </div>
                 <div class="card-body">
                     @if ($eligibilityData['siswa_tidak_layak']->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped table-hover">
-                                <thead class="thead-dark">
+                        {{-- Filter & Search --}}
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <input type="text" id="searchSiswa" class="form-control form-control-sm"
+                                    placeholder="Cari nama/NISN siswa...">
+                            </div>
+                            <div class="col-md-3">
+                                <select id="filterKelas" class="form-control form-control-sm">
+                                    <option value="">Semua Kelas</option>
+                                    @foreach ($eligibilityData['siswa_tidak_layak']->pluck('kelas.nama_lengkap')->unique()->sort() as $kelas)
+                                        <option value="{{ $kelas }}">{{ $kelas }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select id="filterMapel" class="form-control form-control-sm">
+                                    <option value="">Semua</option>
+                                    <option value="mapel">Ada Masalah Mapel</option>
+                                    <option value="kedisiplinan">Ada Masalah Kedisiplinan</option>
+                                    <option value="keagamaan">Ada Masalah Keagamaan</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 text-right">
+                                <small class="text-muted">Menampilkan <span
+                                        id="countShown">{{ $eligibilityData['siswa_tidak_layak']->count() }}</span>
+                                    siswa</small>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                            <table class="table table-bordered table-striped table-hover" id="tableSiswaTidakLayak">
+                                <thead class="thead-dark sticky-top">
                                     <tr>
                                         <th width="5%">No</th>
                                         <th>NISN</th>
                                         <th>Nama Siswa</th>
                                         <th>Kelas</th>
-                                        <th class="text-center">Mapel</th>
-                                        <th class="text-center">Kedisiplinan</th>
-                                        <th class="text-center">Keagamaan</th>
-                                        <th>Ringkasan Masalah</th>
+                                        <th class="text-center" width="8%">Mapel</th>
+                                        <th class="text-center" width="8%">Kedis</th>
+                                        <th class="text-center" width="8%">Keag</th>
+                                        <th width="30%">Ringkasan Masalah</th>
+                                        <th class="text-center" width="8%">Detail</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($eligibilityData['siswa_tidak_layak'] as $index => $data)
-                                        <tr>
+                                        <tr data-kelas="{{ $data['kelas']->nama_lengkap ?? '' }}"
+                                            data-nama="{{ strtolower($data['siswa']->nama ?? '') }}"
+                                            data-nisn="{{ $data['siswa']->nisn ?? '' }}"
+                                            data-mapel="{{ $data['has_mapel_issues'] ? '1' : '0' }}"
+                                            data-kedisiplinan="{{ $data['has_kedisiplinan_issues'] ? '1' : '0' }}"
+                                            data-keagamaan="{{ $data['has_keagamaan_issues'] ? '1' : '0' }}">
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $data['siswa']->nisn ?? '-' }}</td>
                                             <td>
@@ -381,16 +419,199 @@
                                                     @endforeach
                                                 </small>
                                             </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-info" data-toggle="modal"
+                                                    data-target="#detailModal{{ $index }}" title="Lihat Detail">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
+
+                        {{-- Modals moved outside the table to keep HTML valid --}}
+                        @foreach ($eligibilityData['siswa_tidak_layak'] as $index => $data)
+                            <div class="modal fade" id="detailModal{{ $index }}" tabindex="-1" role="dialog">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-danger">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-user"></i>
+                                                Detail Masalah: {{ $data['siswa']->nama ?? '-' }}
+                                            </h5>
+                                            <button type="button" class="close text-white" data-dismiss="modal">
+                                                <span>&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <strong>NISN:</strong>
+                                                    {{ $data['siswa']->nisn ?? '-' }}<br>
+                                                    <strong>Kelas:</strong>
+                                                    {{ $data['kelas']->nama_lengkap ?? '-' }}
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Status:</strong>
+                                                    <span class="badge badge-danger">Tidak Layak Ujian</span>
+                                                </div>
+                                            </div>
+
+                                            <hr>
+
+                                            {{-- Detail Masalah per Kategori --}}
+                                            <div class="accordion" id="accordionDetail{{ $index }}">
+                                                {{-- Mapel --}}
+                                                @if ($data['has_mapel_issues'])
+                                                    <div class="card">
+                                                        <div class="card-header bg-danger"
+                                                            id="headingMapel{{ $index }}">
+                                                            <h5 class="mb-0">
+                                                                <button class="btn btn-link text-white" type="button"
+                                                                    data-toggle="collapse"
+                                                                    data-target="#collapseMapel{{ $index }}">
+                                                                    <i class="fas fa-book"></i> Masalah Penilaian Mapel
+                                                                    ({{ count($data['issues']['mapel'] ?? []) }})
+                                                                </button>
+                                                            </h5>
+                                                        </div>
+                                                        <div id="collapseMapel{{ $index }}" class="collapse show">
+                                                            <div class="card-body p-0">
+                                                                <table class="table table-sm mb-0">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Mata Pelajaran</th>
+                                                                            <th>Jenis Ujian</th>
+                                                                            <th>Status</th>
+                                                                            <th>Keterangan</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @foreach ($data['issues']['mapel'] ?? [] as $issue)
+                                                                            <tr>
+                                                                                <td>{{ $issue['mapel'] }}</td>
+                                                                                <td>{{ $issue['jenis_ujian'] }}</td>
+                                                                                <td>
+                                                                                    @if ($issue['type'] === 'remidi_pending')
+                                                                                        <span
+                                                                                            class="badge badge-danger">{{ $issue['nilai_asli'] }}/{{ $issue['kkm'] }}</span>
+                                                                                    @elseif($issue['type'] === 'no_penilaian')
+                                                                                        <span
+                                                                                            class="badge badge-secondary">Belum
+                                                                                            Ada</span>
+                                                                                    @elseif($issue['type'] === 'nilai_belum_diinput')
+                                                                                        <span
+                                                                                            class="badge badge-warning">Belum
+                                                                                            Dinilai</span>
+                                                                                    @endif
+                                                                                </td>
+                                                                                <td><small>{{ $issue['message'] }}</small>
+                                                                                </td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- Kedisiplinan --}}
+                                                @if ($data['has_kedisiplinan_issues'])
+                                                    <div class="card">
+                                                        <div class="card-header bg-warning"
+                                                            id="headingKedis{{ $index }}">
+                                                            <h5 class="mb-0">
+                                                                <button class="btn btn-link text-dark" type="button"
+                                                                    data-toggle="collapse"
+                                                                    data-target="#collapseKedis{{ $index }}">
+                                                                    <i class="fas fa-user-check"></i> Masalah Kedisiplinan
+                                                                    ({{ count($data['issues']['kedisiplinan'] ?? []) }})
+                                                                </button>
+                                                            </h5>
+                                                        </div>
+                                                        <div id="collapseKedis{{ $index }}" class="collapse">
+                                                            <div class="card-body">
+                                                                @foreach ($data['issues']['kedisiplinan'] ?? [] as $issue)
+                                                                    @if ($issue['type'] === 'kedisiplinan_kurang')
+                                                                        <p><strong>Persentase:</strong>
+                                                                            {{ $issue['persentase'] }}% (Min:
+                                                                            {{ $issue['minimal'] }}%)</p>
+                                                                        <p>Terpenuhi:
+                                                                            {{ $issue['terpenuhi'] }}/{{ $issue['total'] }}
+                                                                        </p>
+                                                                    @else
+                                                                        <p>• {{ $issue['jenis'] }}: Belum Terpenuhi</p>
+                                                                    @endif
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- Keagamaan --}}
+                                                @if ($data['has_keagamaan_issues'])
+                                                    <div class="card">
+                                                        <div class="card-header bg-info"
+                                                            id="headingKeag{{ $index }}">
+                                                            <h5 class="mb-0">
+                                                                <button class="btn btn-link text-white" type="button"
+                                                                    data-toggle="collapse"
+                                                                    data-target="#collapseKeag{{ $index }}">
+                                                                    <i class="fas fa-pray"></i> Masalah Keagamaan
+                                                                    ({{ count($data['issues']['keagamaan'] ?? []) }})
+                                                                </button>
+                                                            </h5>
+                                                        </div>
+                                                        <div id="collapseKeag{{ $index }}" class="collapse">
+                                                            <div class="card-body">
+                                                                <table class="table table-sm mb-0">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Kegiatan</th>
+                                                                            <th>Status</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @foreach ($data['issues']['keagamaan'] ?? [] as $issue)
+                                                                            <tr>
+                                                                                <td>{{ $issue['kegiatan'] }}</td>
+                                                                                <td>
+                                                                                    @if ($issue['type'] === 'keagamaan_kurang')
+                                                                                        <span
+                                                                                            class="badge badge-danger">{{ $issue['nilai'] }}/{{ $issue['minimal'] }}</span>
+                                                                                    @else
+                                                                                        <span
+                                                                                            class="badge badge-secondary">Belum
+                                                                                            Dinilai</span>
+                                                                                    @endif
+                                                                                </td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">Tutup</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+
                         @if ($eligibilityData['tidak_layak'] > 20)
                             <div class="alert alert-warning mt-3 mb-0">
                                 <i class="fas fa-info-circle"></i>
                                 Menampilkan 20 dari {{ $eligibilityData['tidak_layak'] }} siswa.
-                                Untuk melihat semua, silakan export data.
+                                Gunakan filter untuk mencari siswa tertentu.
                             </div>
                         @endif
                     @else
@@ -416,6 +637,8 @@
                         @if ($tahunAkademikAktif)
                             <strong>{{ $tahunAkademikAktif->nama_tahun_akademik }}</strong>
                             <br>
+                            <strong>{{ strtoupper($tahunAkademikAktif->getSemesterInfo()['semester']) }}</strong>
+                            <br>
                             <small class="text-muted">
                                 {{ $tahunAkademikAktif->getTanggalMulai()?->format('d M Y') }} -
                                 {{ $tahunAkademikAktif->getTanggalSelesai()?->format('d M Y') }}
@@ -429,6 +652,59 @@
         </div>
     </div>
 @endsection
+@push('css')
+    <style>
+        /* Sticky header untuk tabel */
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #343a40;
+            color: white;
+        }
+
+        /* Custom scrollbar */
+        .table-responsive::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Modal accordion */
+        .modal .accordion .card {
+            border: none;
+            margin-bottom: 5px;
+        }
+
+        .modal .accordion .card-header {
+            padding: 8px 15px;
+        }
+
+        .modal .accordion .btn-link {
+            text-decoration: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        /* Hover effect */
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, .05);
+            cursor: pointer;
+        }
+    </style>
+@endpush
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
@@ -575,5 +851,72 @@
                 }
             });
         @endif
+    </script>
+
+    {{-- Script untuk Filter & Search Tabel Siswa Tidak Layak --}}
+    <script>
+        $(document).ready(function() {
+            // Search functionality
+            $('#searchSiswa').on('keyup', function() {
+                filterTable();
+            });
+
+            // Filter by kelas
+            $('#filterKelas').on('change', function() {
+                filterTable();
+            });
+
+            // Filter by kategori masalah
+            $('#filterMapel').on('change', function() {
+                filterTable();
+            });
+
+            function filterTable() {
+                const searchTerm = $('#searchSiswa').val().toLowerCase();
+                const filterKelas = $('#filterKelas').val();
+                const filterKategori = $('#filterMapel').val();
+                let visibleCount = 0;
+
+                $('#tableSiswaTidakLayak tbody tr').each(function() {
+                    const row = $(this);
+                    const nama = row.data('nama');
+                    const nisn = row.data('nisn');
+                    const kelas = row.data('kelas');
+                    const hasMapel = row.data('mapel') == '1';
+                    const hasKedisiplinan = row.data('kedisiplinan') == '1';
+                    const hasKeagamaan = row.data('keagamaan') == '1';
+
+                    let showRow = true;
+
+                    // Filter by search
+                    if (searchTerm && !nama.includes(searchTerm) && !nisn.includes(searchTerm)) {
+                        showRow = false;
+                    }
+
+                    // Filter by kelas
+                    if (filterKelas && kelas !== filterKelas) {
+                        showRow = false;
+                    }
+
+                    // Filter by kategori
+                    if (filterKategori === 'mapel' && !hasMapel) {
+                        showRow = false;
+                    } else if (filterKategori === 'kedisiplinan' && !hasKedisiplinan) {
+                        showRow = false;
+                    } else if (filterKategori === 'keagamaan' && !hasKeagamaan) {
+                        showRow = false;
+                    }
+
+                    if (showRow) {
+                        row.show();
+                        visibleCount++;
+                    } else {
+                        row.hide();
+                    }
+                });
+
+                $('#countShown').text(visibleCount);
+            }
+        });
     </script>
 @endpush

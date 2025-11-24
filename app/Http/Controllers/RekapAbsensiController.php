@@ -20,6 +20,7 @@ class RekapAbsensiController extends Controller
         $kelasId = $request->get('kelas_id');
         $tahunAkademikId = $request->get('tahun_akademik_id');
         $mapelId = $request->get('mapel_id');
+        $semester = $request->get('semester'); // NEW: Filter semester
 
         if (!$tahunAkademikId) {
             $tahunAkademik = TahunAkademik::where('status_aktif', true)->first();
@@ -32,9 +33,32 @@ class RekapAbsensiController extends Controller
         $tahunAkademikList = TahunAkademik::orderBy('created_at', 'desc')->get();
 
         $rekap = null;
+        $tanggalMulai = null;
+        $tanggalSelesai = null;
 
         if ($kelasId && $tahunAkademikId) {
             $tahunAkademik = TahunAkademik::find($tahunAkademikId);
+
+            // Tentukan rentang tanggal berdasarkan semester
+            if ($semester) {
+                // Filter berdasarkan semester spesifik
+                if ($semester === 'ganjil') {
+                    $tanggalMulai = $tahunAkademik->tanggal_mulai_ganjil;
+                    $tanggalSelesai = $tahunAkademik->tanggal_selesai_ganjil;
+                } else {
+                    $tanggalMulai = $tahunAkademik->tanggal_mulai_genap;
+                    $tanggalSelesai = $tahunAkademik->tanggal_selesai_genap;
+                }
+            } else {
+                // Tampilkan semua (kedua semester)
+                $tanggalMulai = $tahunAkademik->tanggal_mulai_ganjil;
+                $tanggalSelesai = $tahunAkademik->tanggal_selesai_genap;
+            }
+
+            // Validasi tanggal
+            if (!$tanggalMulai || !$tanggalSelesai) {
+                return back()->with('error', 'Rentang tanggal semester belum diatur untuk tahun akademik ini.');
+            }
 
             $query = Absensi::select(
                 'siswa.id as siswa_id',
@@ -56,10 +80,7 @@ class RekapAbsensiController extends Controller
                 ->join('jadwal_pelajaran', 'pertemuan.jadwal_pelajaran_id', '=', 'jadwal_pelajaran.id')
                 ->join('guru_kelas', 'jadwal_pelajaran.guru_kelas_id', '=', 'guru_kelas.id')
                 ->where('guru_kelas.tahun_akademik_id', $tahunAkademikId)
-                ->whereBetween('pertemuan.tanggal', [
-                    $tahunAkademik->tanggal_mulai,
-                    $tahunAkademik->tanggal_selesai
-                ]);
+                ->whereBetween('pertemuan.tanggal', [$tanggalMulai, $tanggalSelesai]);
 
             if ($mapelId) {
                 $query->join('guru_mapel', 'guru_kelas.guru_mapel_id', '=', 'guru_mapel.id')
@@ -84,7 +105,10 @@ class RekapAbsensiController extends Controller
             'tahunAkademikList',
             'kelasId',
             'mapelId',
-            'tahunAkademikId'
+            'tahunAkademikId',
+            'semester',
+            'tanggalMulai',
+            'tanggalSelesai'
         ));
     }
 
@@ -95,6 +119,7 @@ class RekapAbsensiController extends Controller
     {
         $tahunAkademikId = $request->get('tahun_akademik_id');
         $mapelId = $request->get('mapel_id');
+        $semester = $request->get('semester'); // NEW: Filter semester
 
         if (!$tahunAkademikId) {
             $tahunAkademik = TahunAkademik::where('status_aktif', true)->first();
@@ -105,6 +130,23 @@ class RekapAbsensiController extends Controller
         $mapelList = Mapel::orderBy('nama_mapel')->get();
         $tahunAkademikList = TahunAkademik::orderBy('created_at', 'desc')->get();
 
+        // Tentukan rentang tanggal
+        $tanggalMulai = null;
+        $tanggalSelesai = null;
+
+        if ($semester) {
+            if ($semester === 'ganjil') {
+                $tanggalMulai = $tahunAkademik->tanggal_mulai_ganjil;
+                $tanggalSelesai = $tahunAkademik->tanggal_selesai_ganjil;
+            } else {
+                $tanggalMulai = $tahunAkademik->tanggal_mulai_genap;
+                $tanggalSelesai = $tahunAkademik->tanggal_selesai_genap;
+            }
+        } else {
+            $tanggalMulai = $tahunAkademik->tanggal_mulai_ganjil;
+            $tanggalSelesai = $tahunAkademik->tanggal_selesai_genap;
+        }
+
         $query = Absensi::with([
             'pertemuan.jadwalPelajaran.guruKelas.guruMapel.mapel',
             'pertemuan.jadwalPelajaran.guruKelas.guruMapel.guru'
@@ -113,11 +155,8 @@ class RekapAbsensiController extends Controller
             ->whereHas('pertemuan.jadwalPelajaran.guruKelas', function ($q) use ($tahunAkademikId) {
                 $q->where('tahun_akademik_id', $tahunAkademikId);
             })
-            ->whereHas('pertemuan', function ($q) use ($tahunAkademik) {
-                $q->whereBetween('tanggal', [
-                    $tahunAkademik->tanggal_mulai,
-                    $tahunAkademik->tanggal_selesai
-                ]);
+            ->whereHas('pertemuan', function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
             });
 
         if ($mapelId) {
@@ -140,6 +179,9 @@ class RekapAbsensiController extends Controller
             ->whereHas('pertemuan.jadwalPelajaran.guruKelas', function ($q) use ($tahunAkademikId) {
                 $q->where('tahun_akademik_id', $tahunAkademikId);
             })
+            ->whereHas('pertemuan', function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
+            })
             ->first();
 
         $ringkasan->persentase_hadir = $ringkasan->total > 0
@@ -153,7 +195,10 @@ class RekapAbsensiController extends Controller
             'mapelList',
             'tahunAkademikList',
             'mapelId',
-            'tahunAkademikId'
+            'tahunAkademikId',
+            'semester',
+            'tanggalMulai',
+            'tanggalSelesai'
         ));
     }
 }

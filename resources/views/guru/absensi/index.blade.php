@@ -86,6 +86,10 @@
                                                     <i class="fas fa-check"></i> Mulai Absensi
                                                 </a>
                                             @endif
+                                            {{-- <a href="{{ route('guru.absensi.history', $jadwal->id) }}"
+                                                class="btn btn-sm btn-success" title="Lihat Riwayat Absensi">
+                                                <i class="fas fa-history"></i> Riwayat
+                                            </a> --}}
                                         </td>
                                     </tr>
                                 @empty

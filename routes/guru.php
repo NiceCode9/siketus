@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Guru\GuruDashboardController::class, 'index'])->name('dashboard');
+
     // Jadwal Mengajar Guru
     Route::prefix('jadwal')->name('jadwal-guru.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Guru\JadwalGuruController::class, 'index'])->name('index');
@@ -19,7 +20,10 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
         Route::post('/store/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'store'])->name('store');
         Route::get('/edit/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'edit'])->name('edit');
         Route::put('/update/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'update'])->name('update');
+
+        // NEW: Route untuk history dan detail
         Route::get('/history/{jadwal_id}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'history'])->name('history');
+        Route::get('/detail/{pertemuan}', [\App\Http\Controllers\Absensi\AbsensiController::class, 'detail'])->name('detail');
     });
 
     // KKM Management

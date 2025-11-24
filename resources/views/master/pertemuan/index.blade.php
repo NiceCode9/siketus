@@ -34,25 +34,60 @@
                                                 {{ $tahunAkademikId == $ta->id ? 'selected' : '' }}>
                                                 {{ $ta->nama_tahun_akademik }}
                                                 @if ($ta->status_aktif)
-                                                    <span class="badge badge-success">Aktif</span>
+                                                    (Aktif)
                                                 @endif
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
+                                <div class="col-md-6">
+                                    <label>Pilih Semester:</label>
+                                    <select name="semester" class="form-control" onchange="this.form.submit()">
+                                        <option value="ganjil" {{ $semester == 'ganjil' ? 'selected' : '' }}>
+                                            Semester Ganjil
+                                        </option>
+                                        <option value="genap" {{ $semester == 'genap' ? 'selected' : '' }}>
+                                            Semester Genap
+                                        </option>
+                                    </select>
+                                </div>
                             </div>
                         </form>
 
-                        @if ($tahunAkademikId)
+                        @if ($tahunAkademikId && $semester)
+                            {{-- Info Semester --}}
+                            @if ($tahunAkademik)
+                                <div class="alert alert-info mb-4">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>{{ $tahunAkademik->nama_tahun_akademik }}</strong>
+                                    <br>
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            📅 Semester Ganjil:
+                                            {{ $tahunAkademik->tanggal_mulai_ganjil?->format('d M Y') }} -
+                                            {{ $tahunAkademik->tanggal_selesai_ganjil?->format('d M Y') }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            📅 Semester Genap:
+                                            {{ $tahunAkademik->tanggal_mulai_genap?->format('d M Y') }} -
+                                            {{ $tahunAkademik->tanggal_selesai_genap?->format('d M Y') }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
                             <div class="row mb-4">
                                 <div class="col-md-12">
-                                    <h5 class="mb-3">Statistik Pertemuan</h5>
+                                    <h5 class="mb-3">Statistik Pertemuan - Semester {{ ucfirst($semester) }}</h5>
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="card bg-primary text-white">
                                                 <div class="card-body">
                                                     <h3>{{ $stats['total'] ?? 0 }}</h3>
                                                     <p class="mb-0">Total Pertemuan</p>
+                                                    <small>({{ $stats['total_ganjil'] ?? 0 }} Ganjil +
+                                                        {{ $stats['total_genap'] ?? 0 }} Genap =
+                                                        {{ $stats['total_all'] ?? 0 }})</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -94,31 +129,32 @@
                                         <div class="card-body">
                                             <p class="mb-3">
                                                 <i class="fas fa-info-circle text-info"></i>
-                                                Sistem akan membuat jadwal pertemuan untuk seluruh semester berdasarkan:
+                                                Sistem akan membuat jadwal pertemuan untuk <strong>KEDUA SEMESTER (Ganjil &
+                                                    Genap)</strong> sekaligus berdasarkan:
                                             </p>
                                             <ul>
-                                                <li>Jadwal pelajaran yang sudah dibuat</li>
+                                                <li>Jadwal pelajaran yang sudah dibuat untuk masing-masing semester</li>
                                                 <li>Kalender akademik (hari libur akan di-skip otomatis)</li>
-                                                <li>Periode tahun akademik yang dipilih</li>
+                                                <li>Periode masing-masing semester</li>
                                             </ul>
 
                                             <div class="alert alert-warning">
                                                 <i class="fas fa-exclamation-triangle"></i>
                                                 <strong>Perhatian:</strong> Pastikan jadwal pelajaran dan kalender libur
-                                                sudah lengkap sebelum generate!
+                                                untuk kedua semester sudah lengkap!
                                             </div>
 
                                             <form action="{{ route('admin.pertemuan.generate') }}" method="POST"
-                                                onsubmit="return confirm('Yakin ingin generate pertemuan? Proses ini mungkin memakan waktu beberapa menit.')">
+                                                onsubmit="return confirm('Yakin ingin generate pertemuan untuk KEDUA SEMESTER? Proses ini mungkin memakan waktu beberapa menit.')">
                                                 @csrf
                                                 <input type="hidden" name="tahun_akademik_id"
                                                     value="{{ $tahunAkademikId }}">
 
                                                 <button type="submit" class="btn btn-primary btn-lg">
-                                                    <i class="fas fa-cogs"></i> Generate Pertemuan
+                                                    <i class="fas fa-cogs"></i> Generate Pertemuan (Semester Ganjil + Genap)
                                                 </button>
 
-                                                <a href="{{ route('admin.pertemuan.list', ['tahun_akademik_id' => $tahunAkademikId]) }}"
+                                                <a href="{{ route('admin.pertemuan.list', ['tahun_akademik_id' => $tahunAkademikId, 'semester' => $semester]) }}"
                                                     class="btn btn-info btn-lg">
                                                     <i class="fas fa-list"></i> Lihat Daftar Pertemuan
                                                 </a>
@@ -137,8 +173,8 @@
                                         <div class="card-body">
                                             <p class="mb-3">
                                                 <i class="fas fa-info-circle text-warning"></i>
-                                                Menghapus semua pertemuan yang <strong>belum diabsen</strong> (status:
-                                                Terjadwal) untuk tahun akademik ini.
+                                                Menghapus semua pertemuan <strong>KEDUA SEMESTER</strong>
+                                                yang <strong>belum diabsen</strong> (status: Terjadwal).
                                             </p>
 
                                             <div class="alert alert-danger">
@@ -148,14 +184,14 @@
                                             </div>
 
                                             <form action="{{ route('admin.pertemuan.reset') }}" method="POST"
-                                                onsubmit="return confirm('YAKIN ingin menghapus semua pertemuan yang belum diabsen? Tindakan ini tidak dapat dibatalkan!')">
+                                                onsubmit="return confirm('YAKIN ingin menghapus semua pertemuan (Semester Ganjil & Genap) yang belum diabsen? Tindakan ini tidak dapat dibatalkan!')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <input type="hidden" name="tahun_akademik_id"
                                                     value="{{ $tahunAkademikId }}">
 
                                                 <button type="submit" class="btn btn-danger">
-                                                    <i class="fas fa-trash"></i> Reset Pertemuan
+                                                    <i class="fas fa-trash"></i> Reset Pertemuan (Kedua Semester)
                                                 </button>
                                             </form>
                                         </div>
@@ -164,7 +200,8 @@
                             </div>
                         @else
                             <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i> Silakan pilih tahun akademik terlebih dahulu.
+                                <i class="fas fa-info-circle"></i> Silakan pilih tahun akademik dan semester terlebih
+                                dahulu.
                             </div>
                         @endif
                     </div>

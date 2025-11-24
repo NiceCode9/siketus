@@ -23,6 +23,18 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                <div class="col-md-2">
+                                    <label>Semester</label>
+                                    <select name="semester" class="form-control">
+                                        <option value="">Semua Semester</option>
+                                        <option value="ganjil" {{ $semester == 'ganjil' ? 'selected' : '' }}>
+                                            Ganjil
+                                        </option>
+                                        <option value="genap" {{ $semester == 'genap' ? 'selected' : '' }}>
+                                            Genap
+                                        </option>
+                                    </select>
+                                </div>
                                 <div class="col-md-3">
                                     <label>Kelas <span class="text-danger">*</span></label>
                                     <select name="kelas_id" class="form-control" required>
@@ -35,8 +47,8 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-3">
-                                    <label>Mata Pelajaran (Opsional)</label>
+                                <div class="col-md-2">
+                                    <label>Mata Pelajaran</label>
                                     <select name="mapel_id" class="form-control">
                                         <option value="">Semua Mapel</option>
                                         @foreach ($mapelList as $mapel)
@@ -47,7 +59,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label>&nbsp;</label>
                                     <button type="submit" class="btn btn-primary btn-block">
                                         <i class="fas fa-search"></i> Tampilkan
@@ -57,6 +69,19 @@
                         </form>
 
                         @if ($rekap)
+                            @if (isset($tanggalMulai) && isset($tanggalSelesai))
+                                <div class="alert alert-info mb-3">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>Periode:</strong>
+                                    {{ $tanggalMulai->format('d/m/Y') }} - {{ $tanggalSelesai->format('d/m/Y') }}
+                                    @if ($semester)
+                                        <span class="badge badge-primary ml-2">Semester {{ ucfirst($semester) }}</span>
+                                    @else
+                                        <span class="badge badge-secondary ml-2">Semua Semester</span>
+                                    @endif
+                                </div>
+                            @endif
+
                             <div class="table-responsive">
                                 <table class="table table-bordered table-striped">
                                     <thead class="thead-dark">
@@ -107,7 +132,7 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a href="{{ route('admin.rekap.per-siswa', ['siswa' => $data->siswa_id, 'tahun_akademik_id' => $tahunAkademikId, 'mapel_id' => $mapelId]) }}"
+                                                    <a href="{{ route('admin.rekap.per-siswa', ['siswa' => $data->siswa_id, 'tahun_akademik_id' => $tahunAkademikId, 'mapel_id' => $mapelId, 'semester' => $semester]) }}"
                                                         class="btn btn-sm btn-info">
                                                         <i class="fas fa-eye"></i> Detail
                                                     </a>

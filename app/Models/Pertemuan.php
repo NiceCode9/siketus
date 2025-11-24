@@ -17,6 +17,7 @@ class Pertemuan extends Model
         'pertemuan_ke',
         'status',
         'generated_auto',
+        'semester', // TAMBAHAN BARU
     ];
 
     protected $casts = [
@@ -53,6 +54,14 @@ class Pertemuan extends Model
     }
 
     /**
+     * Scope untuk filter berdasarkan semester
+     */
+    public function scopeBySemester($query, $semester)
+    {
+        return $query->where('semester', $semester);
+    }
+
+    /**
      * Scope untuk filter berdasarkan range tanggal
      */
     public function scopeBetweenDates($query, $startDate, $endDate)
@@ -82,5 +91,13 @@ class Pertemuan extends Model
         $hadir = $this->absensi()->where('status_kehadiran', 'hadir')->count();
 
         return round(($hadir / $total) * 100, 2);
+    }
+
+    /**
+     * Get semester label
+     */
+    public function getSemesterLabelAttribute()
+    {
+        return ucfirst($this->semester ?? 'ganjil');
     }
 }

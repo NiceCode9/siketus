@@ -91,32 +91,101 @@ class EligibilityService
     }
 
     /**
-     * Check penilaian mapel - apakah ada remidi yang masih pending
+     * Check penilaian mapel - apakah sudah ada penilaian dan tidak ada remidi pending
      */
     protected function checkPenilaianMapel($siswaId, $tahunAkademikId, $semester): array
     {
         $issues = [];
+        $siswa = Siswa::find($siswaId);
 
-        // Cek remidi yang masih pending
-        $remidiPending = RemidiSiswa::with(['guruKelas.guruMapel.mapel', 'jenisUjian'])
-            ->where('siswa_id', $siswaId)
+        if (!$siswa || !$siswa->current_class_id) {
+            $issues[] = [
+                'type' => 'no_class',
+                'message' => 'Siswa belum memiliki kelas',
+            ];
+            return $issues;
+        }
+
+        // Ambil semua guru_kelas yang mengajar di kelas siswa ini untuk tahun akademik aktif
+        $guruKelasList = \App\Models\GuruKelas::where('kelas_id', $siswa->current_class_id)
             ->where('tahun_akademik_id', $tahunAkademikId)
-            ->where('semester', $semester)
-            ->where('status_remidi', 'pending')
+            ->where('aktif', true)
+            ->with(['guruMapel.mapel'])
             ->get();
 
-        foreach ($remidiPending as $remidi) {
-            $mapelName = $remidi->guruKelas->guruMapel->mapel->nama_mapel ?? 'Unknown';
-            $jenisUjian = $remidi->jenisUjian->nama_jenis_ujian ?? 'Unknown';
-
+        if ($guruKelasList->isEmpty()) {
             $issues[] = [
-                'type' => 'remidi_pending',
-                'mapel' => $mapelName,
-                'jenis_ujian' => $jenisUjian,
-                'nilai_asli' => $remidi->nilai_asli,
-                'kkm' => $remidi->kkm,
-                'message' => "Nilai {$mapelName} ({$jenisUjian}) di bawah KKM. Nilai: {$remidi->nilai_asli}, KKM: {$remidi->kkm}",
+                'type' => 'no_guru_kelas',
+                'message' => 'Belum ada mata pelajaran yang diajarkan untuk kelas ini',
             ];
+            return $issues;
+        }
+
+        // Ambil semua jenis ujian untuk semester ini
+        $jenisUjianList = \App\Models\JenisUjian::where('tahun_akademik_id', $tahunAkademikId)
+            ->where('semester', $semester)
+            ->get();
+
+        if ($jenisUjianList->isEmpty()) {
+            $issues[] = [
+                'type' => 'no_jenis_ujian',
+                'message' => 'Belum ada jenis ujian untuk semester ini',
+            ];
+            return $issues;
+        }
+
+        // CEK: Apakah sudah ada penilaian untuk setiap mapel dan jenis ujian?
+        foreach ($guruKelasList as $guruKelas) {
+            $mapelName = $guruKelas->guruMapel->mapel->nama_mapel ?? 'Unknown';
+
+            foreach ($jenisUjianList as $jenisUjian) {
+                $penilaian = PenilaianMapel::where('siswa_id', $siswaId)
+                    ->where('guru_kelas_id', $guruKelas->id)
+                    ->where('jenis_ujian_id', $jenisUjian->id)
+                    ->where('semester', $semester)
+                    ->first();
+
+                // 1. CEK: Apakah penilaian sudah ada?
+                if (!$penilaian) {
+                    $issues[] = [
+                        'type' => 'no_penilaian',
+                        'mapel' => $mapelName,
+                        'jenis_ujian' => $jenisUjian->nama_jenis_ujian,
+                        'message' => "Belum ada penilaian {$mapelName} untuk {$jenisUjian->nama_jenis_ujian}",
+                    ];
+                    continue;
+                }
+
+                // 2. CEK: Apakah nilai sudah diinput (tidak null)?
+                if ($penilaian->nilai === null || $penilaian->nilai === '') {
+                    $issues[] = [
+                        'type' => 'nilai_belum_diinput',
+                        'mapel' => $mapelName,
+                        'jenis_ujian' => $jenisUjian->nama_jenis_ujian,
+                        'message' => "Nilai {$mapelName} untuk {$jenisUjian->nama_jenis_ujian} belum diinput oleh guru",
+                    ];
+                    continue;
+                }
+
+                // 3. CEK: Apakah ada remidi pending?
+                $remidi = RemidiSiswa::where('siswa_id', $siswaId)
+                    ->where('guru_kelas_id', $guruKelas->id)
+                    ->where('jenis_ujian_id', $jenisUjian->id)
+                    ->where('semester', $semester)
+                    ->where('status_remidi', 'pending')
+                    ->first();
+
+                if ($remidi) {
+                    $issues[] = [
+                        'type' => 'remidi_pending',
+                        'mapel' => $mapelName,
+                        'jenis_ujian' => $jenisUjian->nama_jenis_ujian,
+                        'nilai_asli' => $remidi->nilai_asli,
+                        'kkm' => $remidi->kkm,
+                        'message' => "Nilai {$mapelName} ({$jenisUjian->nama_jenis_ujian}) di bawah KKM dan remidi belum selesai. Nilai: {$remidi->nilai_asli}, KKM: {$remidi->kkm}",
+                    ];
+                }
+            }
         }
 
         return $issues;
@@ -244,7 +313,33 @@ class EligibilityService
         $summary = [];
 
         if (isset($issues['mapel']) && count($issues['mapel']) > 0) {
-            $summary[] = count($issues['mapel']) . ' mata pelajaran memiliki nilai di bawah KKM (perlu remidi)';
+            $mapelIssues = collect($issues['mapel']);
+
+            $noPenilaian = $mapelIssues->where('type', 'no_penilaian')->count();
+            $nilaiBelumDiinput = $mapelIssues->where('type', 'nilai_belum_diinput')->count();
+            $remidiPending = $mapelIssues->where('type', 'remidi_pending')->count();
+            $noGuruKelas = $mapelIssues->where('type', 'no_guru_kelas')->count();
+            $noJenisUjian = $mapelIssues->where('type', 'no_jenis_ujian')->count();
+
+            if ($noGuruKelas > 0) {
+                $summary[] = "Belum ada mata pelajaran yang diajarkan untuk kelas ini";
+            }
+
+            if ($noJenisUjian > 0) {
+                $summary[] = "Belum ada jenis ujian untuk semester ini";
+            }
+
+            if ($noPenilaian > 0) {
+                $summary[] = "{$noPenilaian} penilaian mata pelajaran belum dibuat";
+            }
+
+            if ($nilaiBelumDiinput > 0) {
+                $summary[] = "{$nilaiBelumDiinput} nilai mata pelajaran belum diinput oleh guru";
+            }
+
+            if ($remidiPending > 0) {
+                $summary[] = "{$remidiPending} mata pelajaran memiliki nilai di bawah KKM (perlu remidi)";
+            }
         }
 
         if (isset($issues['kedisiplinan']) && count($issues['kedisiplinan']) > 0) {

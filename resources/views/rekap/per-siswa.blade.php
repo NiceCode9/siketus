@@ -30,6 +30,16 @@
                                 <div class="card bg-light">
                                     <div class="card-body">
                                         <h5>Ringkasan Kehadiran</h5>
+                                        @if (isset($tanggalMulai) && isset($tanggalSelesai))
+                                            <p class="text-muted small mb-2">
+                                                Periode: {{ $tanggalMulai->format('d/m/Y') }} -
+                                                {{ $tanggalSelesai->format('d/m/Y') }}
+                                                @if ($semester)
+                                                    <span class="badge badge-primary">Semester
+                                                        {{ ucfirst($semester) }}</span>
+                                                @endif
+                                            </p>
+                                        @endif
                                         <div class="row text-center">
                                             <div class="col-3">
                                                 <h3 class="text-success">{{ $ringkasan->hadir }}</h3>
@@ -64,7 +74,7 @@
                         <form method="GET" class="mb-3">
                             <input type="hidden" name="siswa" value="{{ $siswa->id }}">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label>Tahun Akademik</label>
                                     <select name="tahun_akademik_id" class="form-control" onchange="this.form.submit()">
                                         @foreach ($tahunAkademikList as $ta)
@@ -75,7 +85,19 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <label>Semester</label>
+                                    <select name="semester" class="form-control" onchange="this.form.submit()">
+                                        <option value="">Semua Semester</option>
+                                        <option value="ganjil" {{ $semester == 'ganjil' ? 'selected' : '' }}>
+                                            Ganjil
+                                        </option>
+                                        <option value="genap" {{ $semester == 'genap' ? 'selected' : '' }}>
+                                            Genap
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
                                     <label>Filter Mata Pelajaran</label>
                                     <select name="mapel_id" class="form-control" onchange="this.form.submit()">
                                         <option value="">Semua Mapel</option>
@@ -135,7 +157,7 @@
                         {{ $absensiList->appends(request()->query())->links() }}
 
                         <div class="mt-3">
-                            <a href="{{ route('admin.rekap.per-kelas', ['kelas_id' => $siswa->kelas_id, 'tahun_akademik_id' => $tahunAkademikId]) }}"
+                            <a href="{{ route('admin.rekap.per-kelas', ['kelas_id' => $siswa->kelas_id, 'tahun_akademik_id' => $tahunAkademikId, 'semester' => $semester]) }}"
                                 class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Kembali ke Rekap Kelas
                             </a>

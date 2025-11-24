@@ -42,30 +42,53 @@
                                 Penilaian Mapel
                                 <span class="badge badge-danger">{{ $eligibility['mapel_issues_count'] }} masalah</span>
                             </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="card-body p-0">
-                            <ul class="list-group list-group-flush">
-                                @foreach ($eligibility['issues']['mapel'] as $issue)
-                                    <li class="list-group-item">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <strong>{{ $issue['mapel'] }}</strong>
-                                                <br>
-                                                <small class="text-muted">{{ $issue['jenis_ujian'] }}</small>
-                                            </div>
-                                            <div class="text-right">
-                                                <span class="badge badge-danger">{{ $issue['nilai_asli'] }}</span>
-                                                <br>
-                                                <small>KKM: {{ $issue['kkm'] }}</small>
-                                            </div>
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
+                        <div class="card-body p-0" style="display: none;">
+                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="thead-light sticky-top">
+                                        <tr>
+                                            <th>Mata Pelajaran</th>
+                                            <th>Jenis Ujian</th>
+                                            <th class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($eligibility['issues']['mapel'] as $issue)
+                                            <tr>
+                                                <td>
+                                                    <strong class="d-block">{{ $issue['mapel'] }}</strong>
+                                                    <small class="text-danger">{{ $issue['message'] }}</small>
+                                                </td>
+                                                <td>{{ $issue['jenis_ujian'] }}</td>
+                                                <td class="text-center">
+                                                    @if ($issue['type'] === 'remidi_pending')
+                                                        <span class="badge badge-danger"
+                                                            title="Nilai: {{ $issue['nilai_asli'] }}, KKM: {{ $issue['kkm'] }}">
+                                                            {{ $issue['nilai_asli'] }} / {{ $issue['kkm'] }}
+                                                        </span>
+                                                    @elseif($issue['type'] === 'no_penilaian')
+                                                        <span class="badge badge-secondary">Belum Ada</span>
+                                                    @elseif($issue['type'] === 'nilai_belum_diinput')
+                                                        <span class="badge badge-warning">Belum Dinilai</span>
+                                                    @else
+                                                        <span class="badge badge-info">-</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                         <div class="card-footer text-center">
                             <a href="{{ route('siswa.remidi.index') }}" class="btn btn-sm btn-danger">
-                                <i class="fas fa-list"></i> Lihat Remidi
+                                <i class="fas fa-list"></i> Lihat Semua Remidi
                             </a>
                         </div>
                     </div>
@@ -83,28 +106,33 @@
                                 <span class="badge badge-warning">{{ $eligibility['kedisiplinan_issues_count'] }}
                                     masalah</span>
                             </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="card-body p-0">
-                            <ul class="list-group list-group-flush">
+                        <div class="card-body p-0" style="display: none;">
+                            <ul class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
                                 @foreach ($eligibility['issues']['kedisiplinan'] as $issue)
                                     <li class="list-group-item">
                                         @if ($issue['type'] === 'kedisiplinan_kurang')
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span>Persentase Kedisiplinan</span>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span><strong>Persentase Kedisiplinan</strong></span>
                                                 <div class="text-right">
                                                     <span class="badge badge-warning">{{ $issue['persentase'] }}%</span>
                                                     <br>
                                                     <small>Min: {{ $issue['minimal'] }}%</small>
                                                 </div>
                                             </div>
-                                            <div class="progress mt-2" style="height: 10px;">
+                                            <div class="progress" style="height: 10px;">
                                                 <div class="progress-bar bg-warning" role="progressbar"
                                                     style="width: {{ $issue['persentase'] }}%"
                                                     aria-valuenow="{{ $issue['persentase'] }}" aria-valuemin="0"
                                                     aria-valuemax="100">
                                                 </div>
                                             </div>
-                                            <small class="text-muted">Terpenuhi:
+                                            <small class="text-muted d-block mt-1">Terpenuhi:
                                                 {{ $issue['terpenuhi'] }}/{{ $issue['total'] }}</small>
                                         @else
                                             <div class="d-flex justify-content-between align-items-center">
@@ -130,34 +158,49 @@
                                 Keagamaan
                                 <span class="badge badge-info">{{ $eligibility['keagamaan_issues_count'] }} masalah</span>
                             </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="card-body p-0">
-                            <ul class="list-group list-group-flush">
-                                @foreach ($eligibility['issues']['keagamaan'] as $issue)
-                                    <li class="list-group-item">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <strong>{{ $issue['kegiatan'] }}</strong>
-                                                <br>
-                                                @if ($issue['type'] === 'keagamaan_kurang')
-                                                    <small class="text-muted">Nilai di bawah standar</small>
-                                                @else
-                                                    <small class="text-muted">Belum dinilai</small>
-                                                @endif
-                                            </div>
-                                            <div class="text-right">
-                                                @if ($issue['type'] === 'keagamaan_kurang')
-                                                    <span class="badge badge-danger">{{ $issue['nilai'] }}</span>
-                                                    <br>
-                                                    <small>Min: {{ $issue['minimal'] }}</small>
-                                                @else
-                                                    <span class="badge badge-secondary">-</span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
+                        <div class="card-body p-0" style="display: none;">
+                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="thead-light sticky-top">
+                                        <tr>
+                                            <th>Kegiatan</th>
+                                            <th class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($eligibility['issues']['keagamaan'] as $issue)
+                                            <tr>
+                                                <td>
+                                                    <strong class="d-block">{{ $issue['kegiatan'] }}</strong>
+                                                    @if ($issue['type'] === 'keagamaan_kurang')
+                                                        <small class="text-danger">Nilai di bawah standar</small>
+                                                    @else
+                                                        <small class="text-muted">Belum dinilai</small>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">
+                                                    @if ($issue['type'] === 'keagamaan_kurang')
+                                                        <span class="badge badge-danger"
+                                                            title="Minimal: {{ $issue['minimal'] }}">
+                                                            {{ $issue['nilai'] }}
+                                                        </span>
+                                                        <br>
+                                                        <small class="text-muted">Min: {{ $issue['minimal'] }}</small>
+                                                    @else
+                                                        <span class="badge badge-secondary">-</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -493,9 +536,9 @@
                     <a href="{{ route('siswa.jadwal.index') }}" class="btn btn-primary">
                         <i class="fas fa-calendar"></i> Lihat Jadwal Lengkap
                     </a>
-                    <a href="{{ route('siswa.penilaian.index') }}" class="btn btn-success">
+                    {{-- <a href="{{ route('siswa.penilaian.index') }}" class="btn btn-success">
                         <i class="fas fa-edit"></i> Input Nilai Diri
-                    </a>
+                    </a> --}}
                     <a href="{{ route('siswa.riwayat-penilaian.siswa.index') }}" class="btn btn-info">
                         <i class="fas fa-history"></i> Riwayat Nilai
                     </a>
@@ -524,6 +567,42 @@
 
         .info-box.mb-0 {
             min-height: 80px;
+        }
+
+        /* Sticky header untuk tabel dalam scroll */
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f8f9fa;
+        }
+
+        /* Smooth scroll untuk tabel */
+        .table-responsive::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Animasi untuk collapse card */
+        .card-body {
+            transition: all 0.3s ease;
+        }
+
+        /* Highlight row on hover */
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, .03);
         }
     </style>
 @endpush

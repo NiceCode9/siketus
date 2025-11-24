@@ -88,7 +88,7 @@ class GuruDashboardController extends Controller
         // ============================================
         $eligibilityData = $this->getEligibilityForGuruKelas($guru->id, $kelasYangDiajar, $tahunAkademikAktif);
 
-        return view('guru.dashboard', compact(
+        return view('dashboard.guru', compact(
             'kelasYangDiajar',
             'jadwalHariIni',
             'pertemuanTerbaru',
