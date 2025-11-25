@@ -28,7 +28,6 @@ class KkmController extends Controller
     {
         $guru = Auth::user()->guru;
         $tahunAkademiks = TahunAkademik::orderBy('status_aktif', 'desc')
-            ->orderBy('tanggal_mulai', 'desc')
             ->get();
 
         $selectedTahunAkademik = $request->tahun_akademik_id ?? TahunAkademik::where('status_aktif', true)->first()?->id;

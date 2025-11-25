@@ -81,12 +81,12 @@
                                             class="btn btn-sm btn-primary">
                                             <i class="fas fa-edit"></i> {{ $kkmCount > 0 ? 'Edit' : 'Set' }} KKM
                                         </a>
-                                        @if ($kkmCount > 0)
+                                        {{-- @if ($kkmCount > 0)
                                             <a href="{{ route('guru.kkm.show', $guruKelas->id) }}"
                                                 class="btn btn-sm btn-info">
                                                 <i class="fas fa-eye"></i> Lihat
                                             </a>
-                                        @endif
+                                        @endif --}}
                                     @endif
                                 </td>
                             </tr>

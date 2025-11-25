@@ -13,6 +13,11 @@ class JenisUjian extends Model
         'nama_jenis_ujian',
         'deskripsi',
         'semester',
+        'is_syarat_ujian', // TAMBAHAN BARU
+    ];
+
+    protected $casts = [
+        'is_syarat_ujian' => 'boolean',
     ];
 
     public function tahunAkademik()
@@ -28,5 +33,10 @@ class JenisUjian extends Model
     public function kkm()
     {
         return $this->hasOne(KkmMapel::class, 'jenis_ujian_id');
+    }
+
+    public function scopeSyaratUjian($query)
+    {
+        return $query->where('is_syarat_ujian', true);
     }
 }

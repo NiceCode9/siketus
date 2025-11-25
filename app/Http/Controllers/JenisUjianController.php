@@ -67,6 +67,7 @@ class JenisUjianController extends Controller
         $validator = Validator::make($request->all(), [
             'tahun_akademik_id' => 'required|exists:tahun_akademik,id',
             'nama_jenis_ujian' => 'required',
+            'semester' => 'required|in:ganjil,genap',
             'deskripsi' => 'nullable',
         ]);
 
@@ -133,6 +134,7 @@ class JenisUjianController extends Controller
         $validator = Validator::make($request->all(), [
             'tahun_akademik_id' => 'required|exists:tahun_akademik,id',
             'nama_jenis_ujian' => 'required',
+            'semester' => 'required|in:ganjil,genap',
             'deskripsi' => 'nullable',
         ]);
 

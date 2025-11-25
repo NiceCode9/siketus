@@ -121,17 +121,18 @@ class EligibilityService
             return $issues;
         }
 
-        // Ambil semua jenis ujian untuk semester ini
+        // PENTING: Ambil HANYA jenis ujian yang:
+        // 1. Sesuai dengan SEMESTER yang sedang dicek
+        // 2. Ditandai sebagai SYARAT UJIAN (is_syarat_ujian = true)
         $jenisUjianList = \App\Models\JenisUjian::where('tahun_akademik_id', $tahunAkademikId)
-            ->where('semester', $semester)
+            ->where('semester', $semester) // ← Filter berdasarkan semester
+            ->where('is_syarat_ujian', true) // ← HANYA yang jadi syarat ujian
             ->get();
 
         if ($jenisUjianList->isEmpty()) {
-            $issues[] = [
-                'type' => 'no_jenis_ujian',
-                'message' => 'Belum ada jenis ujian untuk semester ini',
-            ];
-            return $issues;
+            // Tidak ada jenis ujian yang jadi syarat, berarti otomatis layak
+            // TIDAK perlu return issue
+            return [];
         }
 
         // CEK: Apakah sudah ada penilaian untuk setiap mapel dan jenis ujian?
@@ -139,10 +140,11 @@ class EligibilityService
             $mapelName = $guruKelas->guruMapel->mapel->nama_mapel ?? 'Unknown';
 
             foreach ($jenisUjianList as $jenisUjian) {
+                // PENTING: Cari penilaian dengan semester yang sesuai
                 $penilaian = PenilaianMapel::where('siswa_id', $siswaId)
                     ->where('guru_kelas_id', $guruKelas->id)
                     ->where('jenis_ujian_id', $jenisUjian->id)
-                    ->where('semester', $semester)
+                    ->where('semester', $semester) // ← Pastikan semester sama
                     ->first();
 
                 // 1. CEK: Apakah penilaian sudah ada?
@@ -151,7 +153,8 @@ class EligibilityService
                         'type' => 'no_penilaian',
                         'mapel' => $mapelName,
                         'jenis_ujian' => $jenisUjian->nama_jenis_ujian,
-                        'message' => "Belum ada penilaian {$mapelName} untuk {$jenisUjian->nama_jenis_ujian}",
+                        'semester' => $semester,
+                        'message' => "Belum ada penilaian {$mapelName} untuk {$jenisUjian->nama_jenis_ujian} semester {$semester}",
                     ];
                     continue;
                 }
@@ -162,16 +165,17 @@ class EligibilityService
                         'type' => 'nilai_belum_diinput',
                         'mapel' => $mapelName,
                         'jenis_ujian' => $jenisUjian->nama_jenis_ujian,
-                        'message' => "Nilai {$mapelName} untuk {$jenisUjian->nama_jenis_ujian} belum diinput oleh guru",
+                        'semester' => $semester,
+                        'message' => "Nilai {$mapelName} untuk {$jenisUjian->nama_jenis_ujian} semester {$semester} belum diinput oleh guru",
                     ];
                     continue;
                 }
 
-                // 3. CEK: Apakah ada remidi pending?
+                // 3. CEK: Apakah ada remidi pending untuk semester ini?
                 $remidi = RemidiSiswa::where('siswa_id', $siswaId)
                     ->where('guru_kelas_id', $guruKelas->id)
                     ->where('jenis_ujian_id', $jenisUjian->id)
-                    ->where('semester', $semester)
+                    ->where('semester', $semester) // ← Pastikan semester sama
                     ->where('status_remidi', 'pending')
                     ->first();
 
@@ -180,9 +184,10 @@ class EligibilityService
                         'type' => 'remidi_pending',
                         'mapel' => $mapelName,
                         'jenis_ujian' => $jenisUjian->nama_jenis_ujian,
+                        'semester' => $semester,
                         'nilai_asli' => $remidi->nilai_asli,
                         'kkm' => $remidi->kkm,
-                        'message' => "Nilai {$mapelName} ({$jenisUjian->nama_jenis_ujian}) di bawah KKM dan remidi belum selesai. Nilai: {$remidi->nilai_asli}, KKM: {$remidi->kkm}",
+                        'message' => "Nilai {$mapelName} ({$jenisUjian->nama_jenis_ujian}) semester {$semester} di bawah KKM dan remidi belum selesai. Nilai: {$remidi->nilai_asli}, KKM: {$remidi->kkm}",
                     ];
                 }
             }

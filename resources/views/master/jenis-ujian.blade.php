@@ -19,7 +19,7 @@
                                         <th width="5%">No</th>
                                         <th>Nama Jenis Ujian</th>
                                         <th>Tahun Akademik</th>
-                                        <th>Status Tahun</th>
+                                        <th>Semester</th>
                                         <th>Deskripsi</th>
                                         <th width="15%">Aksi</th>
                                     </tr>
@@ -73,10 +73,31 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="semester">Semester <span class="text-danger">*</span></label>
+                            <select class="form-control" id="semester" name="semester" required>
+                                <option value="">-- Pilih Semester --</option>
+                                <option value="ganjil">Semester 1</option>
+                                <option value="genap">Semester 2</option>
+                            </select>
+                            <div class="invalid-feedback" id="semester-error"></div>
+                        </div>
+
+                        <div class="form-group">
                             <label for="deskripsi">Deskripsi</label>
                             <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3"
                                 placeholder="Deskripsi singkat tentang jenis ujian"></textarea>
                             <div class="invalid-feedback" id="deskripsi-error"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="is_syarat_ujian" name="is_syarat_ujian" value="1">
+                                <label class="custom-control-label" for="is_syarat_ujian">
+                                    Jadikan sebagai Syarat Ujian
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">Centang jika jenis ujian ini merupakan syarat untuk mengikuti ujian selanjutnya</small>
+                            <div class="invalid-feedback" id="is_syarat_ujian-error"></div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -110,12 +131,20 @@
                             <td id="view-tahun-akademik">-</td>
                         </tr>
                         <tr>
+                            <th>Semester</th>
+                            <td id="view-semester">-</td>
+                        </tr>
+                        <tr>
                             <th>Status Tahun</th>
                             <td id="view-status-tahun">-</td>
                         </tr>
                         <tr>
                             <th>Deskripsi</th>
                             <td id="view-deskripsi">-</td>
+                        </tr>
+                        <tr>
+                            <th>Syarat Ujian</th>
+                            <td id="view-is-syarat-ujian">-</td>
                         </tr>
                     </table>
                 </div>
@@ -189,12 +218,12 @@
                     {
                         data: 'tahun_akademik',
                         name: 'tahunAkademik.nama_tahun_akademik',
-                        width: '20%'
+                        width: '15%'
                     },
                     {
-                        data: 'status_tahun',
-                        name: 'tahunAkademik.status_aktif',
-                        width: '15%'
+                        data: 'semester',
+                        name: 'semester',
+                        width: '10%'
                     },
                     {
                         data: 'deskripsi',
@@ -233,6 +262,16 @@
                         $('#view-tahun-akademik').text(response.tahun_akademik
                             .nama_tahun_akademik);
 
+                        // Display semester
+                        var semesterText = response.jenis_ujian.semester ?
+                            (response.jenis_ujian.semester === 'ganjil' ? 'Semester Ganjil' : 'Semester Genap') : '-';
+                        $('#view-semester').text(semesterText);
+
+                        // Display is_syarat_ujian
+                        var syaratUjianText = response.jenis_ujian.is_syarat_ujian ?
+                            '<span class="badge badge-info">Ya</span>' : '<span class="badge badge-secondary">Tidak</span>';
+                        $('#view-is-syarat-ujian').html(syaratUjianText);
+
                         // Status badge
                         var status = response.tahun_akademik.status_aktif;
                         var badgeClass = status ? 'success' : 'secondary';
@@ -265,7 +304,9 @@
                         $('#jenis_ujian_id').val(response.id);
                         $('#tahun_akademik_id').val(response.tahun_akademik_id);
                         $('#nama_jenis_ujian').val(response.nama_jenis_ujian);
+                        $('#semester').val(response.semester);
                         $('#deskripsi').val(response.deskripsi);
+                        $('#is_syarat_ujian').prop('checked', response.is_syarat_ujian);
 
                         $('#jenis-ujian-modal-label').text('Edit Jenis Ujian');
                         $('#jenis-ujian-modal').modal('show');

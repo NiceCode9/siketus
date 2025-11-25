@@ -29,7 +29,6 @@ class RemidiController extends Controller
     {
         $guru = Auth::user()->guru;
         $tahunAkademiks = TahunAkademik::orderBy('status_aktif', 'desc')
-            ->orderBy('tanggal_mulai', 'desc')
             ->get();
 
         $selectedTahunAkademik = $request->tahun_akademik_id ?? TahunAkademik::where('status_aktif', true)->first()?->id;
@@ -188,13 +187,13 @@ class RemidiController extends Controller
     /**
      * Statistik remidi by mapel
      */
-    public function statistik(Request $request)
-    {
-        $guru = Auth::user()->guru;
-        $tahunAkademikId = $request->tahun_akademik_id ?? TahunAkademik::where('status_aktif', true)->first()?->id;
+    // public function statistik(Request $request)
+    // {
+    //     $guru = Auth::user()->guru;
+    //     $tahunAkademikId = $request->tahun_akademik_id ?? TahunAkademik::where('status_aktif', true)->first()?->id;
 
-        $remidiByMapel = $this->remidiService->getRemidiByMapel($guru->id, $tahunAkademikId);
+    //     $remidiByMapel = $this->remidiService->getRemidiByMapel($guru->id, $tahunAkademikId);
 
-        return view('guru.remidi.statistik', compact('remidiByMapel', 'tahunAkademikId'));
-    }
+    //     return view('guru.remidi.statistik', compact('remidiByMapel', 'tahunAkademikId'));
+    // }
 }
