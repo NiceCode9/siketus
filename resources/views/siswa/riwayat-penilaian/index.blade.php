@@ -208,11 +208,10 @@
                                     <thead class="thead-light">
                                         <tr>
                                             <th>Jenis Kedisiplinan</th>
-                                            <th width="100" class="text-center">Nilai</th>
-                                            <th width="150" class="text-center">Predikat</th>
+                                            <th>Validasi</th>
                                             <th>Catatan</th>
                                             <th>Penilai</th>
-                                            <th width="150">Tanggal</th>
+                                            <th>Tanggal</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -220,10 +219,7 @@
                                             <tr>
                                                 <td>{{ $nilai->kedisiplinan->jenis }}</td>
                                                 <td class="text-center">
-                                                    <span
-                                                        class="badge badge-{{ App\Helpers\NilaiHelper::getBadgeColor($nilai->nilai) }}">
-                                                        {{ number_format($nilai->nilai, 2) }}
-                                                    </span>
+                                                    <i class="fas fa-{{ $nilai->validasi ? 'check-circle text-success' : 'xmark-circle text-danger' }} "></i>
                                                 </td>
                                                 <td class="text-center">
                                                     {{ App\Helpers\NilaiHelper::nilaiToPredikat($nilai->nilai) }}</td>
