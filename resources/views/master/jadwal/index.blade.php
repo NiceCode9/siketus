@@ -1099,7 +1099,6 @@
                         tahun_akademik_id: tahunAkademikId
                     },
                     success: function(data) {
-                        console.log(data);
                         let options = '<option value="">-- Semua Kelas --</option>';
                         data.forEach(function(kelas) {
                             options +=

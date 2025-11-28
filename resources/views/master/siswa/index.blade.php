@@ -48,7 +48,6 @@
                 <form id="siswa-form">
                     <div class="modal-body">
                         <input type="hidden" name="id" id="siswa_id">
-                        <input type="hidden" name="_method" value="POST">
 
                         <div class="row">
                             <div class="col-md-6">
@@ -341,16 +340,15 @@
 
                 var formData = new FormData(this);
                 var id = $('#siswa_id').val();
-                var url = id ? "{{ route('admin.siswa.update', ':id') }}".replace(':id', id) : "{{ route('admin.siswa.store') }}";
+                var url = id ? "{{ url('admin/siswa') }}/" + id : "{{ route('admin.siswa.store') }}";
                 var method = id ? 'PUT' : 'POST';
 
                 // Remove password confirmation from form data
                 formData.delete('password_confirmation');
-                formData.append('_method', method);
 
                 $.ajax({
                     url: url,
-                    type: 'POST',
+                    type: method,
                     data: formData,
                     processData: false,
                     contentType: false,

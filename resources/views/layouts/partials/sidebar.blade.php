@@ -238,12 +238,12 @@
                     </p>
                 </a>
                 <ul class="nav nav-treeview">
-                    {{-- <li class="nav-item">
+                    <li class="nav-item">
                         <a href="{{ route('siswa.penilaian.index') }}" class="nav-link">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Input Nilai</p>
                         </a>
-                    </li> --}}
+                    </li>
                     <li class="nav-item">
                         <a href="{{ route('siswa.riwayat-penilaian.siswa.index') }}" class="nav-link">
                             <i class="far fa-circle nav-icon"></i>

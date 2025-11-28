@@ -40,22 +40,6 @@ class PenilaianService
 
         return $guruKelas->pluck('kelas')->unique('id');
     }
-    
-    /**
-     * Get list of classes taught by a teacher
-     */
-    public function getKelasList($tahunAkademikId)
-    {
-        $guruKelas = GuruKelas::with(['kelas', 'guruMapel.mapel'])
-            // ->whereHas('guruMapel', function ($q) use ($guruId) {
-            //     $q->where('guru_id', $guruId);
-            // })
-            ->where('tahun_akademik_id', $tahunAkademikId)
-            ->where('aktif', true)
-            ->get();
-
-        return $guruKelas->pluck('kelas')->unique('id');
-    }
 
     public function getMapelListByGuru($guruId, $tahunAkademikId)
     {

@@ -78,10 +78,6 @@ class JenisUjianController extends Controller
             ], 422);
         }
 
-        if (!isset($request->is_syarat_ujian)) {
-            $request->merge(['is_syarat_ujian' => false]);
-        }
-
         try {
             // Check for duplicate jenis ujian in the same tahun akademik
             $existingJenisUjian = JenisUjian::where('tahun_akademik_id', $request->tahun_akademik_id)
@@ -161,10 +157,6 @@ class JenisUjianController extends Controller
                     'status' => false,
                     'message' => 'Jenis ujian dengan nama tersebut sudah ada pada tahun akademik yang dipilih!'
                 ], 422);
-            }
-
-            if (!isset($request->is_syarat_ujian)) {
-                $request->merge(['is_syarat_ujian' => false]);
             }
 
             $jenisUjian->update($request->all());

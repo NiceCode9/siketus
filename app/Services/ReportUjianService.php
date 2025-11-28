@@ -66,8 +66,7 @@ class ReportUjianService
 
             // Get nilai untuk setiap jenis ujian
             $nilai = [];
-            if ($guruKelas) {
-                foreach ($jenisUjian as $ju) {
+            foreach ($jenisUjian as $ju) {
                 $penilaian = PenilaianMapel::where('siswa_id', $siswaId)
                     ->where('jenis_ujian_id', $ju->id)
                     ->where('tahun_akademik_id', $tahunAkademikId)
@@ -79,7 +78,7 @@ class ReportUjianService
                     ->first();
 
                 $nilai[$ju->id] = $penilaian ? $penilaian->nilai : '-';
-            }}
+            }
 
             $reportData[] = [
                 'mapel' => $mapel,

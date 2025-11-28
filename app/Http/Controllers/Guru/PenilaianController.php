@@ -44,20 +44,14 @@ class PenilaianController extends Controller
 
         if ($selectedTahunAkademik) {
             // Get kelas yang diampu guru
-            if (!Auth::user()->can('penilaian-kedisiplinan')) {
+            $kelasList = $this->penilaianService->getKelasListByGuru($guru->id, $selectedTahunAkademik);
 
-                $kelasList = $this->penilaianService->getKelasListByGuru($guru->id, $selectedTahunAkademik);
-            } else {
-                 $kelasList = $this->penilaianService->getKelasList($selectedTahunAkademik);
-
-                }
             // Jika kelas dipilih, ambil siswa
             if ($selectedKelas && $selectedSemester && $selectedKategori) {
                 $siswaList = $this->penilaianService->getSiswaByKelas($selectedKelas, $selectedTahunAkademik);
 
                 // Get data berdasarkan kategori
                 if ($selectedKategori === 'mapel') {
-                    
                     $jenisUjianList = $this->penilaianService->getJenisUjianList($selectedTahunAkademik);
                     $guruKelas = $this->penilaianService->getGuruKelas($guru->id, $selectedKelas, $selectedTahunAkademik, $selectedMapel);
 
@@ -80,7 +74,6 @@ class PenilaianController extends Controller
 
                         $existingNilai[$siswa->id]['existingNilai'] = $mappedNilai;
                     }
-                    // iki
                     $nilaiList = $existingNilai;
                 } elseif ($selectedKategori === 'kedisiplinan') {
                     if (!Auth::user()->can('penilaian-kedisiplinan')) {
