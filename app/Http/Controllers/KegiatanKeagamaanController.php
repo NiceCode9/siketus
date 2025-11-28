@@ -28,7 +28,6 @@ class KegiatanKeagamaanController extends Controller
     public function getTahunAkademik(): JsonResponse
     {
         $tahunAkademik = TahunAkademik::orderBy('status_aktif', 'desc')
-            ->orderBy('tanggal_mulai', 'desc')
             ->get();
 
         return response()->json([

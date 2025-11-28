@@ -316,7 +316,7 @@ class JadwalPelajaranController extends Controller
                     'id' => $item->id,
                     'text' => $item->guruMapel->guru->nama . ' - ' .
                         $item->guruMapel->mapel->nama_mapel . ' - ' .
-                        $item->kelas->nama_kelas . ' (' .
+                        $item->kelas->nama_lengkap . ' (' .
                         $item->tahunAkademik->nama_tahun_akademik . ')'
                 ];
             });

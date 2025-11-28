@@ -77,6 +77,8 @@
             </div>
         </div>
 
+
+        {{-- siswa tidak layak ujian --}}
         <!-- Siswa Tidak Layak Ujian -->
         <div class="col-lg-3 col-6">
             <div class="small-box bg-danger">

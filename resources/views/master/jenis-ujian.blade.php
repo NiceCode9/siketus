@@ -301,6 +301,7 @@
                     url: "{{ url('admin/jenis-ujian') }}/" + id + "/edit",
                     type: "GET",
                     success: function(response) {
+                        console.log(response);
                         $('#jenis_ujian_id').val(response.id);
                         $('#tahun_akademik_id').val(response.tahun_akademik_id);
                         $('#nama_jenis_ujian').val(response.nama_jenis_ujian);

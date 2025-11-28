@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,18 +22,25 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             JurusanSeeder::class,
             KelasSeeder::class,
-            TahunAkademikSeeder::class,
-            MapelSeeder::class,
-            GuruSeeder::class,
-            SiswaSeeder::class,
-            UserSeeder::class,
-            GuruMapelSeeder::class,
-            GuruKelasSeeder::class,
-            RiwayatKelasSeeder::class,
-            KedisiplinanSeeder::class,
-            KegiatanKeagamaanSeeder::class,
-            JadwalPelajaranSeeder::class,
-            JenisUjianSeeder::class,
+            // TahunAkademikSeeder::class,
+            // MapelSeeder::class,
+            // GuruSeeder::class,
+            // SiswaSeeder::class,
+            // UserSeeder::class,
+            // GuruMapelSeeder::class,
+            // GuruKelasSeeder::class,
+            // RiwayatKelasSeeder::class,
+            // KedisiplinanSeeder::class,
+            // KegiatanKeagamaanSeeder::class,
+            // JadwalPelajaranSeeder::class,
+            // JenisUjianSeeder::class,
         ]);
+        $admin = User::create([
+            'name' => 'Administrator',
+            'username' => 'admin',
+            'email' => 'admin@sekolah.com',
+            'password' => Hash::make('password'),
+        ]);
+        $admin->assignRole('admin');
     }
 }
