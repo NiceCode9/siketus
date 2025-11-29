@@ -42,9 +42,15 @@ class PenilaianController extends Controller
         $guruKelas = null;
         $nilaiList = [];
 
+        // dd($guru->guruMapel->guru);
+
         if ($selectedTahunAkademik) {
             // Get kelas yang diampu guru
             $kelasList = $this->penilaianService->getKelasListByGuru($guru->id, $selectedTahunAkademik);
+
+            if (Auth::user()->hasPermissionTo('penilaian-kedisiplinan')) {
+                $kelasList = Kelas::all();
+            }
 
             // Jika kelas dipilih, ambil siswa
             if ($selectedKelas && $selectedSemester && $selectedKategori) {

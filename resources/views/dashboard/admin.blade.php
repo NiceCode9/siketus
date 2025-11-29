@@ -131,9 +131,9 @@
                                     <span class="info-box-number">{{ $eligibilityData['tidak_layak'] }}</span>
                                     <div class="progress">
                                         <div class="progress-bar bg-light"
-                                            style="width: {{ $eligibilityData['persentase_tidak_layak'] }}%"></div>
+                                            style="width: {{ $eligibilityData['persentase_tidak_layak'] ?? 0 }}%"></div>
                                     </div>
-                                    <span class="progress-description">{{ $eligibilityData['persentase_tidak_layak'] }}%
+                                    <span class="progress-description">{{ $eligibilityData['persentase_tidak_layak'] ?? 0 }}%
                                         perlu penanganan</span>
                                 </div>
                             </div>

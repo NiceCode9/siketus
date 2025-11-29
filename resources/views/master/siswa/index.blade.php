@@ -343,12 +343,17 @@
                 var url = id ? "{{ url('admin/siswa') }}/" + id : "{{ route('admin.siswa.store') }}";
                 var method = id ? 'PUT' : 'POST';
 
+                // Add _method for PUT request (Laravel requirement)
+                if (method === 'PUT') {
+                    formData.append('_method', 'PUT');
+                }
+
                 // Remove password confirmation from form data
                 formData.delete('password_confirmation');
 
                 $.ajax({
                     url: url,
-                    type: method,
+                    type: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,

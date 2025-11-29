@@ -16,31 +16,31 @@ class KegiatanKeagamaanSeeder extends Seeder
         $kegiatan = [
             [
                 'nama_kegiatan' => 'Sholat Dzuhur Berjamaah',
-                'tahun_akademik_id' => 2,
+                'tahun_akademik_id' => 1,
                 'tingkat_kelas' => '10',
                 'semester' => 'ganjil',
             ],
             [
                 'nama_kegiatan' => 'Tadarus Al-Quran',
-                'tahun_akademik_id' => 2,
+                'tahun_akademik_id' => 1,
                 'tingkat_kelas' => '10',
                 'semester' => 'ganjil',
             ],
             [
                 'nama_kegiatan' => 'Kajian Keislaman',
-                'tahun_akademik_id' => 2,
+                'tahun_akademik_id' => 1,
                 'tingkat_kelas' => '10',
                 'semester' => 'ganjil',
             ],
             [
                 'nama_kegiatan' => 'Peringatan Hari Besar Islam',
-                'tahun_akademik_id' => 2,
+                'tahun_akademik_id' => 1,
                 'tingkat_kelas' => '10',
                 'semester' => 'genap',
             ],
             [
                 'nama_kegiatan' => 'Pesantren Kilat',
-                'tahun_akademik_id' => 2,
+                'tahun_akademik_id' => 1,
                 'tingkat_kelas' => '10',
                 'semester' => 'genap',
             ],
