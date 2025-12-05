@@ -93,7 +93,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3 {{ $selectedKategori == 'mapel' ? '' : 'd-none' }}" id="mapel_id_div">
+                    {{-- <div class="col-md-3 {{ $selectedKategori == 'mapel' ? '' : 'd-none' }}" id="mapel_id_div">
                         <label for="mapel_id">Mata Pelajaran</label>
                         <select name="mapel_id" id="mapel_id" class="form-control">
                             <option value="">-- Pilih Mata Pelajaran --</option>
@@ -104,7 +104,15 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div> --}}
+                    
+                    <div class="col-md-3 {{ $selectedKategori == 'mapel' ? '' : 'd-none' }}" id="mapel_id_div">
+                        <label for="mapel_id">Mata Pelajaran</label>
+                        <select name="mapel_id" id="mapel_id" class="form-control">
+
+                        </select>
                     </div>
+                    
                 </div>
 
                 <div class="row">
@@ -319,12 +327,51 @@
                 if (val == 'mapel') {
                     $('#mapel_id_div').removeClass('d-none');
                     $('#mapel_id').prop('required', true);
+                    getMapelByGuruKelas();
                 } else {
                     $('#mapel_id_div').addClass('d-none');
                     $('#mapel_id').prop('required', false);
                     $('#mapel_id').val('');
                 }
             });
+
+            $('#kategori, #kelas_id, #tahun_akademik_id').on('change', function () {
+                if ($('#kategori').val() == 'mapel') {
+                    getMapelByGuruKelas();
+                }
+            });
         });
+
+        function getMapelByGuruKelas(){
+            let kelasId = $('#kelas_id').val();
+            let tahunAkademikId = $('#tahun_akademik_id').val();
+
+            $.ajax({
+                url: "{{ route('guru.get-mapel-by-guru-kelas') }}",
+                type: "GET",
+                data: {
+                    kelas_id: kelasId,
+                    tahun_akademik_id: tahunAkademikId,
+                },
+                success: function(response) {
+                    let mapelSelect = $('#mapel_id');
+                    mapelSelect.empty();
+                    mapelSelect.append('<option value="">-- Pilih Mata Pelajaran --</option>');
+
+                    $.each(response, function(index, mapel) {
+                        mapelSelect.append('<option value="' + mapel.id + '">' + mapel.nama_mapel + '</option>');
+                    });
+
+                    // Set selected mapel if exists
+                    let selectedMapel = "{{ $selectedMapel }}";
+                    if (selectedMapel) {
+                        mapelSelect.val(selectedMapel);
+                    }
+                },
+                error: function(xhr) {
+                    console.log(xhr.responseText);
+                }
+            });
+        }
     </script>
 @endpush

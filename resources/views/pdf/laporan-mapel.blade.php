@@ -92,6 +92,18 @@
         .col-nilai {
             width: 50px;
         }
+
+        .table-container {
+            margin-top: 20px;
+        }
+
+        .table-title {
+            text-align: center;
+            font-size: 12pt;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -118,78 +130,115 @@
         </div>
     </div>
 
-    {{-- Tabel Nilai Mapel --}}
-    <table>
-        <thead>
-            <tr>
-                <th rowspan="2" class="col-no">NO</th>
-                <th rowspan="2" class="col-mapel text-left">
-                    MAPEL<br>
-                    {{ strtoupper($siswa->currentClass->nama_lengkap ?? 'KELAS X') }} SEMESTER
-                    {{ strtoupper($semester) }}
-                </th>
-                @php
-                    // Ambil semua jenis ujian yang ada dari data nilai
-                    $jenisUjianList = [];
-                    foreach ($groupedNilaiMapel as $mapel => $ujianGroup) {
-                        foreach ($ujianGroup->keys() as $ujian) {
-                            if (!in_array($ujian, $jenisUjianList)) {
-                                $jenisUjianList[] = $ujian;
+    {{-- Nilai Mata Pelajaran --}}
+    <div class="table-container">
+        <div class="table-title">Tabel Nilai Mata Pelajaran</div>
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2" class="col-no">NO</th>
+                    <th rowspan="2" class="col-mapel text-left">
+                        MAPEL<br>{{ strtoupper($siswa->currentClass->nama_lengkap ?? 'KELAS X') }} SEMESTER {{ strtoupper($semester) }}
+                    </th>
+                    @php
+                        $jenisUjianList = [];
+                        foreach ($groupedNilaiMapel as $mapel => $ujianGroup) {
+                            foreach ($ujianGroup->keys() as $ujian) {
+                                if (!in_array($ujian, $jenisUjianList)) {
+                                    $jenisUjianList[] = $ujian;
+                                }
                             }
                         }
-                    }
-
-                    // Jumlah kolom tetap 10 sesuai gambar
-                    $jumlahKolom = 10;
-                @endphp
-                <th colspan="{{ $jumlahKolom }}">JENIS UJIAN</th>
-            </tr>
-            <tr>
-                @for ($i = 1; $i <= $jumlahKolom; $i++)
-                    @if ($i <= count($jenisUjianList))
-                        <th class="col-nilai">{{ $jenisUjianList[$i - 1] }}</th>
-                    @else
-                        <th class="col-nilai">{{ $i }}</th>
-                    @endif
-                @endfor
-            </tr>
-        </thead>
-        <tbody>
-            @php $no = 1; @endphp
-
-            {{-- Data Nilai Mapel --}}
-            @foreach ($groupedNilaiMapel as $mapel => $ujianGroup)
+                        $jumlahKolom = 10;
+                    @endphp
+                    <th colspan="{{ $jumlahKolom }}">JENIS UJIAN</th>
+                </tr>
                 <tr>
-                    <td>{{ $no++ }}</td>
-                    <td class="text-left">{{ $mapel }}</td>
-
                     @for ($i = 1; $i <= $jumlahKolom; $i++)
-                        @php
-                            $ujianName = $i <= count($jenisUjianList) ? $jenisUjianList[$i - 1] : null;
-                        @endphp
-                        <td>
-                            @if ($ujianName && isset($ujianGroup[$ujianName]))
-                                {{ number_format($ujianGroup[$ujianName]->first()->nilai, 0) }}
-                            @else
-                                -
-                            @endif
-                        </td>
+                        @if ($i <= count($jenisUjianList))
+                            <th class="col-nilai">{{ $jenisUjianList[$i - 1] }}</th>
+                        @else
+                            <th class="col-nilai">{{ $i }}</th>
+                        @endif
                     @endfor
                 </tr>
-            @endforeach
+            </thead>
+            <tbody>
+                @php $no = 1; @endphp
+                @foreach ($groupedNilaiMapel as $mapel => $ujianGroup)
+                    <tr>
+                        <td>{{ $no++ }}</td>
+                        <td class="text-left">{{ $mapel }}</td>
 
-            {{-- Isi baris kosong jika kurang dari 15 mapel --}}
-            @for ($i = count($groupedNilaiMapel); $i < 15; $i++)
+                        @for ($i = 1; $i <= $jumlahKolom; $i++)
+                            @php
+                                $ujianName = $i <= count($jenisUjianList) ? $jenisUjianList[$i - 1] : null;
+                            @endphp
+                            <td>
+                                @if ($ujianName && isset($ujianGroup[$ujianName]))
+                                    {{ number_format($ujianGroup[$ujianName]->first()->nilai, 0) }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                        @endfor
+                    </tr>
+                @endforeach
+
+                {{-- Isi baris kosong jika kurang dari 15 mapel --}}
+                @for ($i = count($groupedNilaiMapel); $i < 15; $i++)
+                    <tr>
+                        <td>{{ $no++ }}</td>
+                        <td class="text-left"></td>
+                        @for ($j = 0; $j < $jumlahKolom; $j++)
+                            <td>-</td>
+                        @endfor
+                    </tr>
+                @endfor
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Nilai Kedisiplinan --}}
+    <div class="table-container">
+        <div class="table-title">Tabel Nilai Kedisiplinan</div>
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ $no++ }}</td>
-                    <td class="text-left"></td>
-                    @for ($j = 0; $j < $jumlahKolom; $j++)
-                        <td>-</td>
-                    @endfor
+                    <th>No</th>
+                    <th>Jenis Kedisiplinan</th>
+                    <th>Deskripsi</th>
+                    <th>Status</th>
                 </tr>
-            @endfor
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Kehadiran</td>
+                    <td>Presensi kehadiran siswa dalam setiap kelas</td>
+                    <td>Baik</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Disiplin Waktu</td>
+                    <td>Ketepatan siswa dalam mengerjakan tugas dan hadir tepat waktu</td>
+                    <td>Cukup</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Keaktifan</td>
+                    <td>Partisipasi siswa dalam diskusi dan kegiatan kelas</td>
+                    <td>Baik</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Ketertiban</td>
+                    <td>Menjaga ketertiban di kelas dan di lingkungan sekolah</td>
+                    <td>Baik</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     {{-- Footer dengan TTD --}}
     <div style="margin-top: 40px;">

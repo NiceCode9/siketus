@@ -491,8 +491,8 @@
                                                                     <tbody>
                                                                         @foreach ($data['issues']['mapel'] ?? [] as $issue)
                                                                             <tr>
-                                                                                <td>{{ $issue['mapel'] }}</td>
-                                                                                <td>{{ $issue['jenis_ujian'] }}</td>
+                                                                                <td>{{ $issue['mapel'] ?? '-' }}</td>
+                                                                                <td>{{ $issue['jenis_ujian'] ?? '-' }}</td>
                                                                                 <td>
                                                                                     @if ($issue['type'] === 'remidi_pending')
                                                                                         <span

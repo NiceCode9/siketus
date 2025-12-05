@@ -48,9 +48,9 @@ class PenilaianController extends Controller
             // Get kelas yang diampu guru
             $kelasList = $this->penilaianService->getKelasListByGuru($guru->id, $selectedTahunAkademik);
 
-            if (Auth::user()->hasPermissionTo('penilaian-kedisiplinan')) {
-                $kelasList = Kelas::all();
-            }
+            // if (Auth::user()->hasPermissionTo('penilaian-kedisiplinan')) {
+            //     $kelasList = Kelas::all();
+            // }
 
             // Jika kelas dipilih, ambil siswa
             if ($selectedKelas && $selectedSemester && $selectedKategori) {
@@ -59,6 +59,7 @@ class PenilaianController extends Controller
                 // Get data berdasarkan kategori
                 if ($selectedKategori === 'mapel') {
                     $jenisUjianList = $this->penilaianService->getJenisUjianList($selectedTahunAkademik);
+                    // dd($guru->id);
                     $guruKelas = $this->penilaianService->getGuruKelas($guru->id, $selectedKelas, $selectedTahunAkademik, $selectedMapel);
 
                     $existingNilai = [];
@@ -86,6 +87,8 @@ class PenilaianController extends Controller
                         abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
                     }
                     $kedisiplinanList = $this->penilaianService->getKedisiplinanList();
+
+                    $kelasList = Kelas::all();
 
                     // Ambil data nilai kedisiplinan yang sudah ada
                     $existingNilai = [];
@@ -236,5 +239,16 @@ class PenilaianController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    public function getMapelByGuruKelas(Request $request)
+    {
+        $guruId = Auth::user()->guru->id;
+        $kelasId = $request->kelas_id;
+        $tahunAkademikId = $request->tahun_akademik_id;
+
+        $mapelList = $this->penilaianService->getMapelByGuruAndKelas($guruId, $kelasId, $tahunAkademikId);
+
+        return response()->json($mapelList);
     }
 }
