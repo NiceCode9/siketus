@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('siswa_id')->after('password')->nullable()->constrained('siswa')->onDelete('cascade');
-            $table->foreignId('guru_id')->after('siswa_id')->nullable()->constrained('guru')->onDelete('cascade');
+            $table->foreignId('siswa_id')->after('password')->nullable()->constrained('siswa')->onDelete('restrict');
+            $table->foreignId('guru_id')->after('siswa_id')->nullable()->constrained('guru')->onDelete('restrict');
         });
     }
 

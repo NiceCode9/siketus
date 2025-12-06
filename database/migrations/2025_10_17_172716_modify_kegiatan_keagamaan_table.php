@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('tingkat_kelas')->after('tahun_akademik_id');
             $table->string('semester')->after('tingkat_kelas');
 
-            $table->foreign('tahun_akademik_id')->references('id')->on('tahun_akademik')->onDelete('cascade');
+            $table->foreign('tahun_akademik_id')->references('id')->on('tahun_akademik')->onDelete('restrict');
         });
     }
 

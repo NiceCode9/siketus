@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('kalender_akademik', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('cascade');
+            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('restrict');
             $table->date('tanggal');
             $table->enum('jenis_libur', ['nasional', 'sekolah', 'ujian', 'custom'])->default('custom');
             $table->string('keterangan');

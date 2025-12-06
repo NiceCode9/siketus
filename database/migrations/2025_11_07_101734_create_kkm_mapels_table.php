@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('kkm_mapel', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('guru_kelas_id')->constrained('guru_kelas')->onDelete('cascade');
-            $table->foreignId('jenis_ujian_id')->constrained('jenis_ujian')->onDelete('cascade');
-            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('cascade');
+            $table->foreignId('guru_kelas_id')->constrained('guru_kelas')->onDelete('restrict');
+            $table->foreignId('jenis_ujian_id')->constrained('jenis_ujian')->onDelete('restrict');
+            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('restrict');
             $table->decimal('kkm', 5, 2);
             $table->text('keterangan')->nullable();
             $table->timestamps();

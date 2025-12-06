@@ -122,7 +122,8 @@ class TahunAkademikController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                // 'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan: tahun akademik ini mungkin sedang digunakan oleh data lain.',
             ], 500);
         }
     }

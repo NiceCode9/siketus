@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('remidi_siswa', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('siswa_id')->constrained('siswa')->onDelete('cascade');
-            $table->foreignId('penilaian_mapel_id')->constrained('penilaian_mapel')->onDelete('cascade');
-            $table->foreignId('guru_kelas_id')->constrained('guru_kelas')->onDelete('cascade');
-            $table->foreignId('jenis_ujian_id')->constrained('jenis_ujian')->onDelete('cascade');
-            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('cascade');
-            $table->foreignId('kelas_id')->constrained('kelas')->onDelete('cascade');
+            $table->foreignId('siswa_id')->constrained('siswa')->onDelete('restrict');
+            $table->foreignId('penilaian_mapel_id')->constrained('penilaian_mapel')->onDelete('restrict');
+            $table->foreignId('guru_kelas_id')->constrained('guru_kelas')->onDelete('restrict');
+            $table->foreignId('jenis_ujian_id')->constrained('jenis_ujian')->onDelete('restrict');
+            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('restrict');
+            $table->foreignId('kelas_id')->constrained('kelas')->onDelete('restrict');
             $table->enum('semester', ['ganjil', 'genap']);
             $table->decimal('nilai_asli', 5, 2);
             $table->decimal('kkm', 5, 2);

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('pertemuan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('jadwal_pelajaran_id')->constrained('jadwal_pelajaran')->onDelete('cascade');
+            $table->foreignId('jadwal_pelajaran_id')->constrained('jadwal_pelajaran')->onDelete('restrict');
             $table->date('tanggal');
             $table->time('jam_mulai_aktual')->nullable();
             $table->time('jam_selesai_aktual')->nullable();

@@ -14,12 +14,12 @@ return new class extends Migration
         // Tabel untuk Penilaian Kedisiplinan
         Schema::create('penilaian_kedisiplinan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('siswa_id')->constrained('siswa')->onDelete('cascade');
-            $table->foreignId('guru_id')->constrained('guru')->onDelete('cascade');
-            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('cascade');
-            $table->foreignId('kelas_id')->constrained('kelas')->onDelete('cascade');
+            $table->foreignId('siswa_id')->constrained('siswa')->onDelete('restrict');
+            $table->foreignId('guru_id')->constrained('guru')->onDelete('restrict');
+            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('restrict');
+            $table->foreignId('kelas_id')->constrained('kelas')->onDelete('restrict');
             $table->enum('semester', ['ganjil', 'genap']);
-            $table->foreignId('kedisiplinan_id')->constrained('kedisiplinan')->onDelete('cascade');
+            $table->foreignId('kedisiplinan_id')->constrained('kedisiplinan')->onDelete('restrict');
             $table->decimal('nilai', 5, 2)->nullable();
             $table->text('catatan')->nullable();
             $table->timestamps();
@@ -30,11 +30,11 @@ return new class extends Migration
         // Tabel untuk Penilaian Kegiatan Keagamaan
         Schema::create('penilaian_keagamaan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('siswa_id')->constrained('siswa')->onDelete('cascade');
-            $table->foreignId('guru_id')->constrained('guru')->onDelete('cascade');
-            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('cascade');
-            $table->foreignId('kelas_id')->constrained('kelas')->onDelete('cascade');
-            $table->foreignId('kegiatan_keagamaan_id')->constrained('kegiatan_keagamaan')->onDelete('cascade');
+            $table->foreignId('siswa_id')->constrained('siswa')->onDelete('restrict');
+            $table->foreignId('guru_id')->constrained('guru')->onDelete('restrict');
+            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('restrict');
+            $table->foreignId('kelas_id')->constrained('kelas')->onDelete('restrict');
+            $table->foreignId('kegiatan_keagamaan_id')->constrained('kegiatan_keagamaan')->onDelete('restrict');
             $table->enum('semester', ['ganjil', 'genap']);
             $table->decimal('nilai', 5, 2)->nullable();
             $table->text('catatan')->nullable();
@@ -46,11 +46,11 @@ return new class extends Migration
         // Tabel untuk Penilaian Mata Pelajaran
         Schema::create('penilaian_mapel', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('siswa_id')->constrained('siswa')->onDelete('cascade');
-            $table->foreignId('guru_kelas_id')->constrained('guru_kelas')->onDelete('cascade');
-            $table->foreignId('jenis_ujian_id')->constrained('jenis_ujian')->onDelete('cascade');
-            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('cascade');
-            $table->foreignId('kelas_id')->constrained('kelas')->onDelete('cascade');
+            $table->foreignId('siswa_id')->constrained('siswa')->onDelete('restrict');
+            $table->foreignId('guru_kelas_id')->constrained('guru_kelas')->onDelete('restrict');
+            $table->foreignId('jenis_ujian_id')->constrained('jenis_ujian')->onDelete('restrict');
+            $table->foreignId('tahun_akademik_id')->constrained('tahun_akademik')->onDelete('restrict');
+            $table->foreignId('kelas_id')->constrained('kelas')->onDelete('restrict');
             $table->enum('semester', ['ganjil', 'genap']);
             $table->decimal('nilai', 5, 2)->nullable();
             $table->text('catatan')->nullable();

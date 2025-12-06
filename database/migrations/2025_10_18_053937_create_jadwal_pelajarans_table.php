@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('jadwal_pelajaran', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('guru_kelas_id')->constrained('guru_kelas')->onDelete('cascade');
+            $table->foreignId('guru_kelas_id')->constrained('guru_kelas')->onDelete('restrict');
             $table->enum('hari', ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']);
             $table->time('jam_mulai');
             $table->time('jam_selesai');
