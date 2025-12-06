@@ -55,6 +55,21 @@ class PenilaianService
             ->unique('id');
     }
 
+    public function getMapelByGuruAndKelas($guruId, $kelasId, $tahunAkademikId)
+    {
+        return GuruKelas::with('guruMapel.mapel')
+            ->whereHas('guruMapel', function ($q) use ($guruId) {
+                $q->where('guru_id', $guruId);
+            })
+            ->where('kelas_id', $kelasId)
+            ->where('tahun_akademik_id', $tahunAkademikId)
+            ->where('aktif', true)
+            ->get()
+            ->pluck('guruMapel.mapel')
+            ->flatten()
+            ->unique('id');
+    }
+
     /**
      * Get list of students in a class
      */

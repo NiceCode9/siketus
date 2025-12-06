@@ -57,7 +57,7 @@
                                     <div class="card-body">
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <div class="form-group">
+                                                {{-- <div class="form-group">
                                                     <label for="tahun_akademik_baru_id">Tahun Akademik Baru <span
                                                             class="text-danger">*</span></label>
                                                     <select name="tahun_akademik_baru_id" id="tahun_akademik_baru_id"
@@ -65,9 +65,24 @@
                                                         <option value="">-- Pilih Tahun Akademik --</option>
                                                         @if ($tahunAkademikAktif)
                                                             <option value="{{ $tahunAkademikAktif->id }}" selected>
-                                                                {{ $tahunAkademikAktif->tahun_mulai }}/{{ $tahunAkademikAktif->tahun_selesai }}
+                                                                {{ $tahunAkademikAktif->nama_tahun_akademik }}
                                                             </option>
                                                         @endif
+                                                    </select>
+                                                    <small class="form-text text-muted">Tahun akademik untuk tahun ajaran
+                                                        baru</small>
+                                                </div> --}}
+                                                <div class="form-group">
+                                                    <label for="tahun_akademik_baru_id">Tahun Akademik Baru <span
+                                                            class="text-danger">*</span></label>
+                                                    <select name="tahun_akademik_baru_id" id="tahun_akademik_baru_id"
+                                                        class="form-control" required>
+                                                        <option value="">-- Pilih Tahun Akademik --</option>
+                                                        @foreach ($tahunAkademikAll as $taa)
+                                                            <option value="{{ $taa->id }}">
+                                                                {{ $taa->nama_tahun_akademik }}
+                                                            </option>
+                                                        @endforeach
                                                     </select>
                                                     <small class="form-text text-muted">Tahun akademik untuk tahun ajaran
                                                         baru</small>
@@ -134,7 +149,7 @@
                                                                     class="form-control form-control-sm status-siswa"
                                                                     required>
                                                                     <option value="naik_kelas">Naik Kelas</option>
-                                                                    <option value="tinggal">Tinggal Kelas</option>
+                                                                    {{-- <option value="tinggal">Tinggal Kelas</option> --}}
                                                                     <option value="lulus">Lulus</option>
                                                                     <option value="pindah">Pindah Sekolah</option>
                                                                     <option value="dropout">Dropout</option>
@@ -197,7 +212,7 @@
 
                 // Set status semua ke "Naik Kelas"
                 document.querySelectorAll('.status-siswa').forEach(select => {
-                    select.value = 'naik';
+                    select.value = 'naik_kelas';
                 });
 
                 alert('Semua siswa telah diset untuk naik kelas');

@@ -55,4 +55,6 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
         ->name('riwayat-penilaian.index');
     Route::get('/riwayat-penilaian/guru/{siswa}/detail', [\App\Http\Controllers\RiwayatPenilaianController::class, 'guruDetail'])
         ->name('riwayat-penilaian.detail');
+
+    Route::get('/get-mapel-by-guru-kelas', [\App\Http\Controllers\Guru\PenilaianController::class, 'getMapelByGuruKelas'])->name('get-mapel-by-guru-kelas');
 });

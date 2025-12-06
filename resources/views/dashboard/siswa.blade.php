@@ -59,29 +59,42 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($eligibility['issues']['mapel'] as $issue)
+                                        @forelse ($eligibility['issues']['mapel'] as $issue)
                                             <tr>
                                                 <td>
-                                                    <strong class="d-block">{{ $issue['mapel'] }}</strong>
-                                                    <small class="text-danger">{{ $issue['message'] }}</small>
+                                                    <strong class="d-block">{{ $issue['mapel'] ?? '-' }}</strong>
+                                                    <small class="text-danger">{{ $issue['message'] ?? '' }}</small>
                                                 </td>
-                                                <td>{{ $issue['jenis_ujian'] }}</td>
+
+                                                <td>{{ $issue['jenis_ujian'] ?? '-' }}</td>
+
                                                 <td class="text-center">
-                                                    @if ($issue['type'] === 'remidi_pending')
+                                                    @php $type = $issue['type'] ?? null; @endphp
+
+                                                    @if ($type === 'remidi_pending')
                                                         <span class="badge badge-danger"
-                                                            title="Nilai: {{ $issue['nilai_asli'] }}, KKM: {{ $issue['kkm'] }}">
-                                                            {{ $issue['nilai_asli'] }} / {{ $issue['kkm'] }}
+                                                            title="Nilai: {{ $issue['nilai_asli'] ?? '?' }}, KKM: {{ $issue['kkm'] ?? '?' }}">
+                                                            {{ $issue['nilai_asli'] ?? '?' }} / {{ $issue['kkm'] ?? '?' }}
                                                         </span>
-                                                    @elseif($issue['type'] === 'no_penilaian')
+
+                                                    @elseif ($type === 'no_penilaian')
                                                         <span class="badge badge-secondary">Belum Ada</span>
-                                                    @elseif($issue['type'] === 'nilai_belum_diinput')
+
+                                                    @elseif ($type === 'nilai_belum_diinput')
                                                         <span class="badge badge-warning">Belum Dinilai</span>
+
                                                     @else
                                                         <span class="badge badge-info">-</span>
                                                     @endif
                                                 </td>
                                             </tr>
-                                        @endforeach
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">
+                                                    Tidak ada data masalah mapel.
+                                                </td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>

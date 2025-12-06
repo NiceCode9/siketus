@@ -221,7 +221,7 @@
             // Initialize DataTable
             var table = $('#siswa-table').DataTable({
                 processing: true,
-                serverSide: true,
+                serverSide: false,
                 ajax: "{{ route('admin.siswa.index') }}",
                 columns: [{
                         data: 'DT_RowIndex',

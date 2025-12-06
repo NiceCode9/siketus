@@ -69,7 +69,8 @@ class KenaikanKelasController extends Controller
     public function create(Request $request)
     {
         $kelasAsalId = $request->get('kelas_asal_id');
-        $tahunAkademikAktif = TahunAkademik::where('status_aktif', 'aktif')->first();
+        $tahunAkademikAktif = TahunAkademik::where('status_aktif', true)->first();
+        $tahunAkademikAll = TahunAkademik::orderBy('nama_tahun_akademik', 'desc')->get();
 
         if (!$tahunAkademikAktif) {
             return redirect()->back()->with('error', 'Tidak ada tahun akademik aktif.');
@@ -112,7 +113,8 @@ class KenaikanKelasController extends Controller
             'kelasAsal',
             'siswaList',
             'kelasTujuanList',
-            'tahunAkademikAktif'
+            'tahunAkademikAktif',
+            'tahunAkademikAll'
         ));
     }
 
@@ -126,7 +128,7 @@ class KenaikanKelasController extends Controller
             'siswa' => 'required|array',
             'siswa.*.siswa_id' => 'required|exists:siswa,id',
             'siswa.*.kelas_tujuan_id' => 'required|exists:kelas,id',
-            'siswa.*.status' => 'required|in:naik,tinggal,lulus,pindah,dropout',
+            'siswa.*.status' => 'required|in:naik_kelas,lulus,pindah,dropout',
             'siswa.*.keterangan' => 'nullable|string',
             'tahun_akademik_baru_id' => 'required|exists:tahun_akademik,id',
         ]);
@@ -152,9 +154,9 @@ class KenaikanKelasController extends Controller
 
                 // Tentukan status baru berdasarkan pilihan
                 $statusBaru = 'aktif';
-                if (in_array($siswaData['status'], ['naik_kelas', 'lulus', 'pindah', 'dropout'])) {
-                    $statusBaru = $siswaData['status'];
-                }
+                // if (in_array($siswaData['status'], ['aktif','naik_kelas', 'lulus', 'pindah', 'dropout'])) {
+                //     $statusBaru = $siswaData['status'];
+                // }
 
                 // Buat riwayat kelas baru untuk tahun akademik baru
                 RiwayatKelas::create([
