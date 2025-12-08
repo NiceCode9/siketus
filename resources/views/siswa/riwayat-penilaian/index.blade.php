@@ -221,15 +221,15 @@
                                                 <td class="text-center">
                                                     <i class="fas fa-{{ $nilai->validasi ? 'check-circle text-success' : 'xmark-circle text-danger' }} "></i>
                                                 </td>
-                                                <td class="text-center">
-                                                    {{ App\Helpers\NilaiHelper::nilaiToPredikat($nilai->nilai) }}</td>
+                                                {{-- <td class="text-center">
+                                                    {{ App\Helpers\NilaiHelper::nilaiToPredikat($nilai->nilai) }}</td> --}}
                                                 <td>{{ $nilai->catatan ?? '-' }}</td>
                                                 <td>{{ $nilai->guru->nama }}</td>
                                                 <td>{{ $nilai->created_at->format('d/m/Y') }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
-                                    <tfoot class="bg-light">
+                                    {{-- <tfoot class="bg-light">
                                         <tr>
                                             <th class="text-right">Rata-rata:</th>
                                             <th class="text-center">
@@ -243,7 +243,7 @@
                                             </th>
                                             <th colspan="3"></th>
                                         </tr>
-                                    </tfoot>
+                                    </tfoot> --}}
                                 </table>
                             </div>
                         @else

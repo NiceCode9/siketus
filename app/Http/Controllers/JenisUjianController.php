@@ -35,6 +35,9 @@ class JenisUjianController extends Controller
                 ->addColumn('tahun_akademik', function ($row) {
                     return $row->tahunAkademik ? $row->tahunAkademik->nama_tahun_akademik : '-';
                 })
+                ->editColumn('is_syarat_ujian', function ($row) {
+                    return $row->is_syarat_ujian ? 'Ya' : 'Tidak';
+                })
                 ->addColumn('status_tahun', function ($row) {
                     if ($row->tahunAkademik) {
                         $badge = $row->tahunAkademik->status_aktif ? 'success' : 'secondary';
@@ -69,6 +72,7 @@ class JenisUjianController extends Controller
             'nama_jenis_ujian' => 'required',
             'semester' => 'required|in:ganjil,genap',
             'deskripsi' => 'nullable',
+            'is_syarat_ujian' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -91,7 +95,11 @@ class JenisUjianController extends Controller
                 ], 422);
             }
 
-            JenisUjian::create($request->all());
+            // Handle checkbox value
+            $data = $request->all();
+            $data['is_syarat_ujian'] = $request->has('is_syarat_ujian') ? 1 : 0;
+
+            JenisUjian::create($data);
 
             return response()->json([
                 'status' => true,
@@ -136,6 +144,7 @@ class JenisUjianController extends Controller
             'nama_jenis_ujian' => 'required',
             'semester' => 'required|in:ganjil,genap',
             'deskripsi' => 'nullable',
+            'is_syarat_ujian' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -159,7 +168,11 @@ class JenisUjianController extends Controller
                 ], 422);
             }
 
-            $jenisUjian->update($request->all());
+            // Handle checkbox value
+            $data = $request->all();
+            $data['is_syarat_ujian'] = $request->has('is_syarat_ujian') ? 1 : 0;
+
+            $jenisUjian->update($data);
 
             return response()->json([
                 'status' => true,

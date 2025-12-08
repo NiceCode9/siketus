@@ -13,13 +13,14 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-bordered table-striped" id="jenis-ujian-table">
+                            <table class="table table-bordered table-striped" style="width: 100%;" id="jenis-ujian-table">
                                 <thead>
                                     <tr>
                                         <th width="5%">No</th>
                                         <th>Nama Jenis Ujian</th>
                                         <th>Tahun Akademik</th>
                                         <th>Semester</th>
+                                        <th>Is Syarat Ujian</th>
                                         <th>Deskripsi</th>
                                         <th width="15%">Aksi</th>
                                     </tr>
@@ -224,6 +225,10 @@
                         data: 'semester',
                         name: 'semester',
                         width: '10%'
+                    },
+                    {
+                        data: 'is_syarat_ujian',
+                        name: 'is_syarat_ujian',
                     },
                     {
                         data: 'deskripsi',

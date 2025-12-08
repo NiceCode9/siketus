@@ -185,7 +185,7 @@ class GuruController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: Kemungkinan data masih terkait dengan data lain.',
             ], 500);
         }
     }
