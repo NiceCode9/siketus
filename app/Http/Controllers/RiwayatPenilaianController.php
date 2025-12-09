@@ -342,6 +342,48 @@ class RiwayatPenilaianController extends Controller
     //     return $pdf->stream($filename);
     // }
 
+    private function siswaPrintPdfLaporanLengkap(Request $request)
+    {
+        $siswaId = Auth::user()->siswa->id;
+
+        $data = [
+            'tahun_akademik_id' => $request->tahun_akademik_id,
+            'semester' => $request->semester,
+            'siswa_id' => $siswaId,
+        ];
+
+        // Generate Laporan Lengkap (Mapel + Kedisiplinan)
+        // Ambil data Mapel
+        $reportDataMapel = $this->reportUjianService->getDataUjianMapel($data);
+
+        // Ambil data Kedisiplinan
+        $reportDataKedisiplinan = $this->reportUjianService->getDataUjianKedisiplinan($data);
+
+        // Gabungkan data untuk view
+        $pdfData = [
+            'siswa' => $reportDataMapel['siswa'],
+            'kelas' => $reportDataMapel['kelas'],
+            'tahunAkademik' => $reportDataMapel['tahunAkademik'],
+            'semester' => $reportDataMapel['semester'],
+
+            // Data Mapel
+            'jenisUjian' => $reportDataMapel['jenisUjian'],
+            'reportDataMapel' => $reportDataMapel['reportData'],
+
+            // Data Kedisiplinan
+            'kedisiplinan' => $reportDataKedisiplinan['kedisiplinan'],
+            'guru' => $reportDataKedisiplinan['guru'],
+            'nilai' => $reportDataKedisiplinan['nilai'],
+        ];
+
+        $pdf = PDF::loadView('report-ujian.pdf-laporan-lengkap', $pdfData);
+        $pdf->setPaper('A4', 'landscape');
+
+        $fileName = 'Laporan_Lengkap_' . $pdfData['siswa']->nama . '_Semester_' . $data['semester'] . '_' . date('YmdHis') . '.pdf';
+
+        return $pdf->stream($fileName);
+    }
+
     public function siswaPrintPdfLaporan(Request $request)
     {
         $data = [
@@ -353,21 +395,41 @@ class RiwayatPenilaianController extends Controller
 
         $page = null;
 
-        if ($data['kategori'] === 'mapel') {
-            $reportData = $this->reportUjianService->getDataUjianMapel($data);
-            $page = 'report-ujian.pdf-mapel';
-        } elseif ($data['kategori'] === 'kedisiplinan') {
-            $reportData = $this->reportUjianService->getDataUjianKedisiplinan($data);
-            $page = 'report-ujian.pdf-kedisiplinan';
+        if ($data['kategori'] === 'mapel' || $data['kategori'] === 'kedisiplinan') {
+            $reportDataMapel = $this->reportUjianService->getDataUjianMapel($data);
+
+            // Ambil data Kedisiplinan
+            $reportDataKedisiplinan = $this->reportUjianService->getDataUjianKedisiplinan($data);
+
+            // Gabungkan data untuk view
+            $reportData = [
+                'siswa' => $reportDataMapel['siswa'],
+                'kelas' => $reportDataMapel['kelas'],
+                'tahunAkademik' => $reportDataMapel['tahunAkademik'],
+                'semester' => $reportDataMapel['semester'],
+
+                // Data Mapel
+                'jenisUjian' => $reportDataMapel['jenisUjian'],
+                'reportDataMapel' => $reportDataMapel['reportData'],
+
+                // Data Kedisiplinan
+                'kedisiplinan' => $reportDataKedisiplinan['kedisiplinan'],
+                'guru' => $reportDataKedisiplinan['guru'],
+                'nilai' => $reportDataKedisiplinan['nilai'],
+            ];
+
+            $page = 'report-ujian.pdf-mapelkedis';
+            $title = 'mapel_kedisiplinan';
         } else {
             $reportData = $this->reportUjianService->getDataUjianKeagamaan($data);
             $page = 'report-ujian.pdf-keagamaan';
+            $title = 'keagamaan';
         }
 
         $pdf = PDF::loadView($page, $reportData);
         $pdf->setPaper('A4', 'landscape');
 
-        $fileName = 'Laporan_Ujian_' . $data['kategori'] . $reportData['siswa']->nama . '_' . date('YmdHis') . '.pdf';
+        $fileName = 'Laporan_Ujian_' . $title . '_' . $reportData['siswa']->nama . '_' . date('YmdHis') . '.pdf';
 
         return $pdf->stream($fileName);
     }
