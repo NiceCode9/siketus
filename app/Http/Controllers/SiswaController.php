@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\SiswaImport;
 use App\Models\Siswa;
 use App\Models\Kelas;
 use App\Models\RiwayatKelas;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 use Spatie\Permission\Models\Role;
 
@@ -278,5 +280,83 @@ class SiswaController extends Controller
     {
         $kelas = Kelas::all();
         return response()->json($kelas);
+    }
+
+    public function downloadTemplate()
+    {
+        $headers = [
+            'nisn',
+            'nama',
+            'status',
+            'kode_jurusan',
+            'tingkat',
+            'nama_kelas',
+        ];
+
+        // Sample data
+        $sampleData = [
+            [
+                '1234567890123456',
+                'John Doe',
+                'aktif',
+                'TKJ',
+                '10',
+                'A',
+            ]
+        ];
+
+        $data = array_merge([$headers], $sampleData);
+
+        return Excel::download(new class($data) implements \Maatwebsite\Excel\Concerns\FromArray {
+            private $data;
+
+            public function __construct($data)
+            {
+                $this->data = $data;
+            }
+
+            public function array(): array
+            {
+                return $this->data;
+            }
+        }, 'template_import_siswa.xlsx');
+    }
+
+    public function prosesImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls|max:5120',
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $import = new SiswaImport();
+
+            Excel::import($import, $file);
+
+            $successCount = $import->getSuccessCount();
+            $skipCount = $import->getSkipCount();
+            $errors = $import->getErrors();
+
+            $message = "Import selesai! {$successCount} data berhasil diimport";
+            if ($skipCount > 0) {
+                $message .= ", {$skipCount} data dilewati";
+            }
+
+            if (!empty($errors)) {
+                return redirect()->route('admin.siswa.index')
+                    ->with('warning', $message)
+                    ->with('errors', $errors);
+            }
+
+            // return redirect()->back()->with('success', $message);
+            return redirect()->route('admin.siswa.index')
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            // return redirect()->back()->with('error', 'Terjadi kesalahan saat mengimpor: ' . $e->getMessage());
+            dd($e->getMessage());
+            return redirect()->route('admin.siswa.index')
+                ->with('error', 'Gagal mengimport data: ' . $e->getMessage());
+        }
     }
 }

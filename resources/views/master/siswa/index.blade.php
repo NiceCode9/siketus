@@ -4,12 +4,36 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('warning') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                @endif
+
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Data Siswa</h3>
-                        <button type="button" class="btn btn-primary float-right" id="add-siswa-btn">
-                            <i class="fas fa-plus"></i> Tambah Siswa
-                        </button>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-primary" id="add-siswa-btn">
+                                <i class="fas fa-plus"></i> Tambah Siswa
+                            </button>
+                            <a href="{{ route('admin.siswa.download-template') }}" class="btn btn-success"><i
+                                    class="fas fa-file-excel"></i> Download Template</a>
+                            <a href="javascript:void(0)" class="btn btn-danger" title="Import Siswa"
+                                data-target="#modal-import" data-toggle="modal">Import</a>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -85,8 +109,7 @@
                                 <h6>Data Akun</h6>
                                 <div class="form-group">
                                     <label for="username">Username <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="username" name="username" required
-                                        readonly>
+                                    <input type="text" class="form-control" id="username" name="username" required readonly>
                                     <small class="form-text text-muted">Otomatis terisi dari NISN</small>
                                     <div class="invalid-feedback" id="username-error"></div>
                                 </div>
@@ -98,8 +121,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="password">Password <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="password" name="password" required
-                                        readonly>
+                                    <input type="text" class="form-control" id="password" name="password" required readonly>
                                     <small class="form-text text-muted">Otomatis terisi dari NISN (minimal 6
                                         karakter)</small>
                                     <div class="invalid-feedback" id="password-error"></div>
@@ -180,6 +202,40 @@
             </div>
         </div>
     </div>
+
+    <!-- Import Modal -->
+    <div class="modal" id="modal-import">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Import Siswa</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ route('admin.siswa.proses.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="file">Masukkan File</label>
+                            <input type="file" class="form-control @error('file') is-invalid @enderror" name=" file"
+                                id="file" accept=".xlsx,.xls,.csv" required>
+                            @error('file')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="form-text">
+                                Format yang didukung: .xlsx, .xls, .csv. Maksimal ukuran file: 5MB
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Proses Import</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('styles')
@@ -210,7 +266,7 @@
     <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
 
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // CSRF Token setup
             $.ajaxSetup({
                 headers: {
@@ -224,38 +280,38 @@
                 serverSide: false,
                 ajax: "{{ route('admin.siswa.index') }}",
                 columns: [{
-                        data: 'DT_RowIndex',
-                        name: 'DT_RowIndex',
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
-                        data: 'nisn',
-                        name: 'nisn'
-                    },
-                    {
-                        data: 'nama',
-                        name: 'nama'
-                    },
-                    {
-                        data: 'kelas',
-                        name: 'kelas'
-                    },
-                    {
-                        data: 'status_badge',
-                        name: 'status'
-                    },
-                    {
-                        data: 'action',
-                        name: 'action',
-                        orderable: false,
-                        searchable: false
-                    }
+                    data: 'DT_RowIndex',
+                    name: 'DT_RowIndex',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'nisn',
+                    name: 'nisn'
+                },
+                {
+                    data: 'nama',
+                    name: 'nama'
+                },
+                {
+                    data: 'kelas',
+                    name: 'kelas'
+                },
+                {
+                    data: 'status_badge',
+                    name: 'status'
+                },
+                {
+                    data: 'action',
+                    name: 'action',
+                    orderable: false,
+                    searchable: false
+                }
                 ],
             });
 
             // Reset form and show modal for add
-            $('#add-siswa-btn').click(function() {
+            $('#add-siswa-btn').click(function () {
                 $('#siswa-form')[0].reset();
                 $('#siswa_id').val('');
                 $('#siswa-modal-label').text('Tambah Siswa');
@@ -265,16 +321,16 @@
             });
 
             // View button click
-            $(document).on('click', '.view-btn', function() {
+            $(document).on('click', '.view-btn', function () {
                 var id = $(this).data('id');
 
                 $.ajax({
                     url: "{{ url('admin/siswa') }}/" + id,
                     type: "GET",
-                    success: function(response) {
+                    success: function (response) {
                         let namaKelas = response.siswa.current_class ? response.siswa
                             .current_class.tingkat + '-' + response.siswa.current_class.jurusan
-                            .kode_jurusan + '-' + response.siswa.current_class.nama_kelas : '-';
+                                .kode_jurusan + '-' + response.siswa.current_class.nama_kelas : '-';
                         $('#view-nisn').text(response.siswa.nisn);
                         $('#view-nama').text(response.siswa.nama);
                         $('#view-kelas').text(namaKelas);
@@ -290,7 +346,7 @@
 
                         $('#view-modal').modal('show');
                     },
-                    error: function(xhr) {
+                    error: function (xhr) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error!',
@@ -301,13 +357,13 @@
             });
 
             // Edit button click
-            $(document).on('click', '.edit-btn', function() {
+            $(document).on('click', '.edit-btn', function () {
                 var id = $(this).data('id');
 
                 $.ajax({
                     url: "{{ url('admin/siswa') }}/" + id + "/edit",
                     type: "GET",
-                    success: function(response) {
+                    success: function (response) {
                         $('#siswa_id').val(response.siswa.id);
                         $('#nisn').val(response.siswa.nisn);
                         $('#nama').val(response.siswa.nama);
@@ -324,7 +380,7 @@
                         $('#siswa-modal').modal('show');
                         clearValidationErrors();
                     },
-                    error: function(xhr) {
+                    error: function (xhr) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error!',
@@ -335,7 +391,7 @@
             });
 
             // Save form (create/update)
-            $('#siswa-form').submit(function(e) {
+            $('#siswa-form').submit(function (e) {
                 e.preventDefault();
 
                 var formData = new FormData(this);
@@ -357,7 +413,7 @@
                     data: formData,
                     processData: false,
                     contentType: false,
-                    success: function(response) {
+                    success: function (response) {
                         if (response.status) {
                             $('#siswa-modal').modal('hide');
                             table.draw();
@@ -371,7 +427,7 @@
                             });
                         }
                     },
-                    error: function(xhr) {
+                    error: function (xhr) {
                         if (xhr.status === 422) {
                             var errors = xhr.responseJSON.errors || xhr.responseJSON.message;
                             showValidationErrors(errors);
@@ -388,7 +444,7 @@
             });
 
             // Delete button click
-            $(document).on('click', '.delete-btn', function() {
+            $(document).on('click', '.delete-btn', function () {
                 var id = $(this).data('id');
                 var nama = $(this).data('nama');
 
@@ -406,7 +462,7 @@
                         $.ajax({
                             url: "{{ url('admin/siswa') }}/" + id,
                             type: "DELETE",
-                            success: function(response) {
+                            success: function (response) {
                                 if (response.status) {
                                     table.draw();
 
@@ -425,7 +481,7 @@
                                     });
                                 }
                             },
-                            error: function(xhr) {
+                            error: function (xhr) {
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Error!',
@@ -445,7 +501,7 @@
             }
 
             // NISN keyup event untuk auto-fill username dan password
-            $('#nisn').on('keyup', function() {
+            $('#nisn').on('keyup', function () {
                 var nisn = $(this).val();
                 if (nisn) {
                     // Set username sama dengan NISN
@@ -480,7 +536,7 @@
                     });
                 } else {
                     // Multiple field errors
-                    $.each(errors, function(field, messages) {
+                    $.each(errors, function (field, messages) {
                         var input = $('[name="' + field + '"]');
                         var errorElement = $('#' + field + '-error');
 
@@ -491,7 +547,7 @@
             }
 
             // Close modal and reset form
-            $('#siswa-modal').on('hidden.bs.modal', function() {
+            $('#siswa-modal').on('hidden.bs.modal', function () {
                 $('#siswa-form')[0].reset();
                 $('#password').prop('required', true);
                 clearValidationErrors();

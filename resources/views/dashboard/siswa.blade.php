@@ -337,7 +337,7 @@
             </div>
 
             <!-- Rekap Absensi -->
-            <div class="card">
+            {{-- <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">
                         <i class="fas fa-clipboard-check mr-1"></i>
@@ -384,11 +384,11 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 
-    <div class="row">
+    {{-- <div class="row">
         <!-- Jadwal Pelajaran Minggu Ini -->
         <div class="col-lg-12">
             <div class="card">
@@ -442,7 +442,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <div class="row">
         <!-- Nilai Terbaru -->

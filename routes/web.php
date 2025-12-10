@@ -44,6 +44,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         // 'jadwal' => \App\Http\Controllers\Absensi\JadwalPelajaranController::class,
     ]);
 
+    Route::get('download-siswa-template', [\App\Http\Controllers\SiswaController::class, 'downloadTemplate'])->name('siswa.download-template');
+    Route::post('/siswa-import-siswa', [\App\Http\Controllers\SiswaController::class, 'prosesImport'])->name('siswa.proses.import');
+
     Route::prefix('jadwal')->name('jadwal.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'index'])->name('index');
         Route::get('/get-kelas', [\App\Http\Controllers\Absensi\JadwalPelajaranController::class, 'getKelas'])->name('get-kelas');

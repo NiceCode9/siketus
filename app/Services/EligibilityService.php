@@ -17,7 +17,7 @@ class EligibilityService
      * Minimum nilai untuk kedisiplinan dan keagamaan
      * Bisa disesuaikan atau dijadikan config
      */
-    const MIN_NILAI_KEAGAMAAN = 70;
+    const MIN_NILAI_KEAGAMAAN = 80;
     const MIN_PERSENTASE_KEDISIPLINAN = 80; // Persentase minimal kedisiplinan yang harus dipenuhi
 
     /**
