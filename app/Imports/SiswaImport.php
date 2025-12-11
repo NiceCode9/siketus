@@ -48,7 +48,7 @@ class SiswaImport implements ToCollection, WithHeadingRow, WithValidation, WithB
                     continue;
                 }
 
-                 // Cari kelas berdasarkan tingkat dan nama
+                // Cari kelas berdasarkan tingkat dan nama
                 $kelas = Kelas::where('tingkat', $row['tingkat'])
                     ->where('jurusan_id', $jurusan->id)
                     ->where('nama_kelas', $row['nama_kelas'])
@@ -67,7 +67,7 @@ class SiswaImport implements ToCollection, WithHeadingRow, WithValidation, WithB
                     'status' => $row['status'],
                     'current_class_id' => $kelas->id,
                 ];
-                
+
                 $siswa = Siswa::create($siswaData);
 
                 $siswa->riwayatKelas()->create([
@@ -89,15 +89,14 @@ class SiswaImport implements ToCollection, WithHeadingRow, WithValidation, WithB
                 $this->errors[] = "Baris {$rowNumber}: " . $e->getMessage();
                 $this->skipCount++;
             }
-
         }
     }
 
-        public function rules(): array
+    public function rules(): array
     {
         return [
             'nisn' => 'required|unique:siswa,nisn',
-            'tingkat_kelas' => 'required',
+            'tingkat' => 'required',
             'nama_kelas' => 'required',
         ];
     }
@@ -106,7 +105,7 @@ class SiswaImport implements ToCollection, WithHeadingRow, WithValidation, WithB
     {
         return [
             'nisn.unique' => 'NISN :input sudah terdaftar di sistem.',
-            'tingkat_kelas.required' => 'Tingkat kelas wajib diisi.',
+            'tingkat.required' => 'Tingkat kelas wajib diisi.',
             'nama_kelas.required' => 'Nama kelas wajib diisi.',
         ];
     }
