@@ -259,7 +259,7 @@
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td class="text-left">{{ $val->jenis }}</td>
-                        <td>{{ $guru[$val->id] }}</td>
+                        <td>{{ $guru[$val->id] ?? '' }}</td>
                         <td>{{ isset($nilai[$val->id]) && $nilai[$val->id] ? 'valid' : '-' }}</td>
                     </tr>
                 @empty
